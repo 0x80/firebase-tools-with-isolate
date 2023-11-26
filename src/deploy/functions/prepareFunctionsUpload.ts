@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
 
+import { isolate } from "isolate-package";
 import { FirebaseError } from "../../error";
 import * as fsAsync from "../../fsAsync";
 import * as projectConfig from "../../functions/projectConfig";
@@ -135,8 +136,10 @@ export async function prepareFunctionsUpload(
   runtimeConfig?: backend.RuntimeConfigValues
 ): Promise<PackagedSourceInfo | undefined> {
   if (config.isolate === true) {
-    utils.logLabeledBullet("functions", `[NOT IMPLEMENTED YET] isolating ${clc.bold(sourceDir)}`);
-    return packageSource(sourceDir, config, runtimeConfig);
+    utils.logLabeledBullet("functions", `Start isolating the current directory...`);
+    const isolateDir = await isolate();
+    utils.logLabeledBullet("functions", `Finished isolating at ${clc.bold(isolateDir)}`);
+    return packageSource(isolateDir, config, runtimeConfig);
   } else {
     return packageSource(sourceDir, config, runtimeConfig);
   }
