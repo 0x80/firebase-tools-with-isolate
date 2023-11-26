@@ -5,9 +5,9 @@
 // 'npm run generate:json-schema' to regenerate the schema files.
 //
 
-import { RequireAtLeastOne } from "./metaprogramming";
 import type { HttpsOptions } from "firebase-functions/v2/https";
 import { IngressSetting, MemoryOption, VpcEgressSetting } from "firebase-functions/v2/options";
+import { RequireAtLeastOne } from "./metaprogramming";
 
 // should be sourced from - https://github.com/firebase/firebase-tools/blob/master/src/deploy/functions/runtimes/index.ts#L15
 type CloudFunctionRuntimes =
@@ -168,6 +168,7 @@ export type FunctionConfig = {
   ignore?: string[];
   runtime?: CloudFunctionRuntimes;
   codebase?: string;
+  isolate?: boolean;
 } & Deployable;
 
 export type FunctionsConfig = FunctionConfig | FunctionConfig[];
