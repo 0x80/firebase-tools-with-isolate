@@ -34,7 +34,7 @@
         "glob": "^7.1.2",
         "google-auth-library": "^7.11.0",
         "inquirer": "^8.2.0",
-        "isolate-package": "^1.4.1-3",
+        "isolate-package": "^1.4.1-4",
         "js-yaml": "^3.13.1",
         "jsonwebtoken": "^9.0.0",
         "leven": "^3.1.0",
@@ -11379,9 +11379,9 @@
       "integrity": "sha1-6PvzdNxVb/iUehDcsFctYz8s+hA="
     },
     "node_modules/isolate-package": {
-      "version": "1.4.1-3",
-      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.4.1-3.tgz",
-      "integrity": "sha512-JCQbfIvHdRQ3kKjsszETdDEksYJPpCZTS/OfsCVTKNSxB4SOPx2+bcgL16iy9WF7+lwRJs5d629PJ/pRWDWWCw==",
+      "version": "1.4.1-4",
+      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.4.1-4.tgz",
+      "integrity": "sha512-KDDxAqMnCHss+jxHriw8cdgc1rvVTb3Q7bpEAq5G32YNnZIGuW7QxG68kxqBh0AEKWOTAW9BXNh9dAIKCFTNnA==",
       "dependencies": {
         "@pnpm/exec": "^2.0.0",
         "@pnpm/exportable-manifest": "^5.0.9",
@@ -11396,7 +11396,6 @@
         "ramda": "^0.29.1",
         "rename-overwrite": "^4.0.4",
         "source-map-support": "^0.5.21",
-        "strip-json-comments": "^5.0.1",
         "tar-fs": "^2.1.1",
         "yaml": "^2.2.2"
       },
@@ -11514,17 +11513,6 @@
       },
       "funding": {
         "url": "https://github.com/sponsors/isaacs"
-      }
-    },
-    "node_modules/isolate-package/node_modules/strip-json-comments": {
-      "version": "5.0.1",
-      "resolved": "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-5.0.1.tgz",
-      "integrity": "sha512-0fk9zBqO67Nq5M/m45qHCJxylV/DhBlIOVExqgOMiCCrzrhU6tCibRXNqE3jwJLftzE9SNuZtYbpzcO+i9FiKw==",
-      "engines": {
-        "node": ">=14.16"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/isolate-package/node_modules/universalify": {
@@ -28674,9 +28662,9 @@
       "integrity": "sha1-6PvzdNxVb/iUehDcsFctYz8s+hA="
     },
     "isolate-package": {
-      "version": "1.4.1-3",
-      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.4.1-3.tgz",
-      "integrity": "sha512-JCQbfIvHdRQ3kKjsszETdDEksYJPpCZTS/OfsCVTKNSxB4SOPx2+bcgL16iy9WF7+lwRJs5d629PJ/pRWDWWCw==",
+      "version": "1.4.1-4",
+      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.4.1-4.tgz",
+      "integrity": "sha512-KDDxAqMnCHss+jxHriw8cdgc1rvVTb3Q7bpEAq5G32YNnZIGuW7QxG68kxqBh0AEKWOTAW9BXNh9dAIKCFTNnA==",
       "requires": {
         "@pnpm/exec": "^2.0.0",
         "@pnpm/exportable-manifest": "^5.0.9",
@@ -28691,7 +28679,6 @@
         "ramda": "^0.29.1",
         "rename-overwrite": "^4.0.4",
         "source-map-support": "^0.5.21",
-        "strip-json-comments": "^5.0.1",
         "tar-fs": "^2.1.1",
         "yaml": "^2.2.2"
       },
@@ -28766,11 +28753,6 @@
           "version": "4.1.0",
           "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
           "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw=="
-        },
-        "strip-json-comments": {
-          "version": "5.0.1",
-          "resolved": "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-5.0.1.tgz",
-          "integrity": "sha512-0fk9zBqO67Nq5M/m45qHCJxylV/DhBlIOVExqgOMiCCrzrhU6tCibRXNqE3jwJLftzE9SNuZtYbpzcO+i9FiKw=="
         },
         "universalify": {
           "version": "2.0.1",
