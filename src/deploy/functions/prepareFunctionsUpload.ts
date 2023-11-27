@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
 
+import { dynamicImport } from "../../dynamicImport";
 import { FirebaseError } from "../../error";
 import * as fsAsync from "../../fsAsync";
 import * as projectConfig from "../../functions/projectConfig";
@@ -139,9 +140,12 @@ export async function prepareFunctionsUpload(
     utils.logLabeledBullet("functions", `+++ Start isolating the current directory...`);
     try {
       /**
-       * We use an await import because isolate-package depends ESM modules, so its CJS output still needs to loaded dynamically
+       * Use a dynamic import because isolate-package depends ESM modules.
+       * A normal "await import()" gets transpiled to require() so we use the
+       * dynamicImport function which seems to have been created to get around
+       * that problem.
        */
-      const { isolate } = await import("isolate-package");
+      const { isolate } = await dynamicImport("isolate-package");
 
       const isolateDir = await isolate();
       utils.logLabeledBullet("functions", `+++ Finished isolating at ${clc.bold(isolateDir)}`);
