@@ -134,15 +134,23 @@ export async function prepareFunctionsUpload(
   config: projectConfig.ValidatedSingle,
   runtimeConfig?: backend.RuntimeConfigValues
 ): Promise<PackagedSourceInfo | undefined> {
+  utils.logLabeledBullet("functions", `+++ Prepare functions for upload`);
   if (config.isolate === true) {
-    /**
-     * We use an await import because isolate-package depends ESM modules, so its CJS output still needs to loaded dynamically
-     */
-    const { isolate } = await import("isolate-package");
-    utils.logLabeledBullet("functions", `Start isolating the current directory...`);
-    const isolateDir = await isolate();
-    utils.logLabeledBullet("functions", `Finished isolating at ${clc.bold(isolateDir)}`);
-    return packageSource(isolateDir, config, runtimeConfig);
+    utils.logLabeledBullet("functions", `+++ Start isolating the current directory...`);
+    try {
+      /**
+       * We use an await import because isolate-package depends ESM modules, so its CJS output still needs to loaded dynamically
+       */
+      const { isolate } = await import("isolate-package");
+
+      const isolateDir = await isolate();
+      utils.logLabeledBullet("functions", `+++ Finished isolating at ${clc.bold(isolateDir)}`);
+
+      return packageSource(isolateDir, config, runtimeConfig);
+    } catch (err: any) {
+      utils.logLabeledBullet("functions", `+++ Failed to isolate: ${err.message}`);
+      throw err;
+    }
   } else {
     return packageSource(sourceDir, config, runtimeConfig);
   }

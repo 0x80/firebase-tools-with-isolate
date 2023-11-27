@@ -7,12 +7,9 @@
     "outDir": "lib",
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2017",
+    "target": "ES2020",
     "sourceMap": true,
-    "typeRoots": [
-      "node_modules/@types",
-      "src/types"
-    ]
+    "typeRoots": ["node_modules/@types", "src/types"]
   },
   "include": ["src/**/*"],
   "exclude": ["src/dynamicImport.js"]
