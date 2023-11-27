@@ -1,10 +1,12 @@
 # Firebase CLI with monorepo support
 
-This is an experimental fork of the [Firebase Tools](https://github.com/firebase/firebase-tools) which integrates [isolate-package](https://github.com/0x80/isolate-package/) as part of the functions `deploy` command in order to [support monorepo setups](https://thijs-koerselman.medium.com/deploy-to-firebase-without-the-hacks-e685de39025e). Alternatively, you can manually configure `isolate` as part of the `predeploy` step of your configuration, but having the process integrated and only running as part of the deploy command is essential if you like to preserve live code updates when running the Firebase emulators locally during development.
+This is an experimental fork of the [Firebase Tools](https://github.com/firebase/firebase-tools) which integrates [isolate-package](https://github.com/0x80/isolate-package/) as part of the functions `deploy` command in order to [support monorepo setups](https://thijs-koerselman.medium.com/deploy-to-firebase-without-the-hacks-e685de39025e).
 
-I think it might take some time before the Firebase team would agree to make isolate an integral part of the toolchain, if ever, because the package itself is still very new.
+Alternatively, you can manually configure `isolate` as part of the `predeploy` step of your configuration, but having the process integrated and only running as part of the deploy command is essential if you want to have live code updates when running the Firebase emulators locally during development with a watch task.
 
-In the meantime I will try to keep this fork in sync with updates to the original tools. The published versions of the fork will be kept the same as the original `firebase-tools` package, so you can easily see how up-to-date it is.
+I suspect it will take some time before the Firebase team would agree to make isolate an integral part of the toolchain and that is why I have published this fork to be available on NPM.
+
+In the meantime I will try to keep this fairly in-sync with updates to the original firebase-tools repository. The published versions of the fork will be kept the same as the original `firebase-tools` package, so you can easily see how up-to-date it is.
 
 ## Installation
 
@@ -28,7 +30,7 @@ pnpm add firebase-tools-with-isolate@next -D
 
 ## Commands
 
-Installing the fork locally provides you with the same `firebase` command but in order to execute any command on the command line you prefix it with `npx` like `npx firebase deploy`.
+Installing the fork locally provides you with the same `firebase` command but in order to execute a command on the command line you prefix it with `npx` like `npx firebase deploy`.
 
 If you are using the commands as part of a package.json script, `npx` is not required, because scripts already prefer locally installed binaries when available.
 
