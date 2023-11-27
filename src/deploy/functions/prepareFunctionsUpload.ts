@@ -5,7 +5,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
 
-import { isolate } from "isolate-package";
 import { FirebaseError } from "../../error";
 import * as fsAsync from "../../fsAsync";
 import * as projectConfig from "../../functions/projectConfig";
@@ -136,6 +135,10 @@ export async function prepareFunctionsUpload(
   runtimeConfig?: backend.RuntimeConfigValues
 ): Promise<PackagedSourceInfo | undefined> {
   if (config.isolate === true) {
+    /**
+     * We use an await import because isolate-package depends ESM modules, so its CJS output still needs to loaded dynamically
+     */
+    const { isolate } = await import("isolate-package");
     utils.logLabeledBullet("functions", `Start isolating the current directory...`);
     const isolateDir = await isolate();
     utils.logLabeledBullet("functions", `Finished isolating at ${clc.bold(isolateDir)}`);
