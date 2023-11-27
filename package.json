@@ -113,7 +113,7 @@
     "glob": "^7.1.2",
     "google-auth-library": "^7.11.0",
     "inquirer": "^8.2.0",
-    "isolate-package": "^1.4.1-6",
+    "isolate-package": "^1.4.1-8",
     "js-yaml": "^3.13.1",
     "jsonwebtoken": "^9.0.0",
     "leven": "^3.1.0",
