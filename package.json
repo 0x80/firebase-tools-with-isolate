@@ -1,6 +1,6 @@
 {
   "name": "firebase-tools-with-isolate",
-  "version": "12.9.1-4",
+  "version": "12.9.1-5",
   "description": "Command-Line Interface for Firebase with experimental monorepo support",
   "main": "./lib/index.js",
   "bin": {
