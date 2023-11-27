@@ -33,7 +33,7 @@ You have to opt-in to the functions isolate process by setting `functions.isolat
 ```json
 {
   "functions": {
-    "source": "./dist",
+    "source": ".",
     "runtime": "nodejs20",
     "predeploy": ["turbo build"],
     "isolate": true
