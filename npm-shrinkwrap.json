@@ -1,12 +1,12 @@
 {
   "name": "firebase-tools-with-isolate",
-  "version": "12.9.1-5",
+  "version": "12.9.1-6",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "firebase-tools-with-isolate",
-      "version": "12.9.1-5",
+      "version": "12.9.1-6",
       "license": "MIT",
       "dependencies": {
         "@google-cloud/pubsub": "^3.0.1",
