@@ -44,7 +44,7 @@ export async function getFunctionsConfig(projectId: string): Promise<Record<stri
         "Cloud Runtime Config is currently experiencing issues, " +
           "which is preventing your functions from being deployed. " +
           "Please wait a few minutes and then try to deploy your functions again." +
-          "\nRun `firebase deploy --except functions` if you want to continue deploying the rest of your project."
+          "\nRun `firebase deploy --except functions` if you want to continue deploying the rest of your project.",
       );
     }
   }
@@ -63,7 +63,7 @@ async function pipeAsync(from: archiver.Archiver, to: fs.WriteStream) {
 async function packageSource(
   sourceDir: string,
   config: projectConfig.ValidatedSingle,
-  runtimeConfig: any
+  runtimeConfig: any,
 ): Promise<PackagedSourceInfo | undefined> {
   const tmpFile = tmp.fileSync({ prefix: "firebase-functions-", postfix: ".zip" }).name;
   const fileStream = fs.createWriteStream(tmpFile, {
@@ -81,7 +81,7 @@ async function packageSource(
   ignore.push(
     "firebase-debug.log",
     "firebase-debug.*.log",
-    CONFIG_DEST_FILE /* .runtimeconfig.json */
+    CONFIG_DEST_FILE /* .runtimeconfig.json */,
   );
   try {
     const files = await fsAsync.readdirRecursive({ path: sourceDir, ignore: ignore });
@@ -112,7 +112,7 @@ async function packageSource(
       {
         original: err,
         exit: 1,
-      }
+      },
     );
   }
 
@@ -122,7 +122,7 @@ async function packageSource(
       clc.bold(sourceDir) +
       " (" +
       filesize(archive.pointer()) +
-      ") for uploading"
+      ") for uploading",
   );
   const hash = hashes.join(".");
   return { pathToSource: tmpFile, hash };
@@ -134,7 +134,7 @@ async function packageSource(
 export async function prepareFunctionsUpload(
   sourceDir: string,
   config: projectConfig.ValidatedSingle,
-  runtimeConfig?: backend.RuntimeConfigValues
+  runtimeConfig?: backend.RuntimeConfigValues,
 ): Promise<PackagedSourceInfo | undefined> {
   if (config.isolate === true) {
     utils.logLabeledBullet("functions", `Start isolating the source folder...`);
