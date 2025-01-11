@@ -144,9 +144,9 @@ export async function prepareFunctionsUpload(
  * Config is not used yet, but I think we will use it in the future to support
  * the Firebase recommended monorepo alternative setup.
  */
-export async function runIsolate(_config: projectConfig.ValidatedSingle): Promise<string> {
+export async function runIsolate(sourceDirName: string): Promise<string> {
   try {
-    utils.logLabeledBullet("functions", `Isolate the source`);
+    utils.logLabeledBullet("isolate", `Isolating the source`);
     /**
      * Use a dynamic import because isolate-package depends on ESM.
      * A normal "await import()" gets transpiled to require() so we use the
@@ -157,12 +157,24 @@ export async function runIsolate(_config: projectConfig.ValidatedSingle): Promis
      */
     const { isolate } = (await dynamicImport("isolate-package")) as IsolateExports;
 
-    const isolateDir = await isolate();
+    /**
+     * Only set the targetPackagePath if the sourceDirName is not the current
+     * working directory. By default isolate function will use the current working
+     * directory and assume the monorepo root is elsewhere, but the sourceDirName
+     * is given a path if we deploy from the monorepo root.
+     */
+    const isolateDir = await isolate(
+      sourceDirName !== "."
+        ? {
+            config: { targetPackagePath: path.join("./", sourceDirName) },
+          }
+        : undefined,
+    );
 
-    utils.logLabeledBullet("functions", `Finished isolation at ${clc.bold(isolateDir)}`);
+    utils.logLabeledBullet("isolate", `Finished isolation at ${clc.bold(isolateDir)}`);
     return isolateDir;
   } catch (err: any) {
-    utils.logLabeledBullet("functions", `Isolation failed: ${err.message}`, "error");
+    utils.logLabeledBullet("isolate", `Isolation failed: ${err.message}`, "error");
     throw err;
   }
 }
