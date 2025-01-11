@@ -1,12 +1,12 @@
-import * as utils from "../utils";
-import * as clc from "colorette";
 import * as childProcess from "child_process";
-import { FirebaseError } from "../error";
-const needProjectId = require("../projectUtils").needProjectId;
-import { logger } from "../logger";
+import * as clc from "colorette";
 import * as path from "path";
+import { FirebaseError } from "../error";
+import { logger } from "../logger";
 import { Options } from "../options";
+import * as utils from "../utils";
 import { isVSCodeExtension } from "../vsCodeUtils";
+const needProjectId = require("../projectUtils").needProjectId;
 
 function runCommand(command: string, childOptions: childProcess.SpawnOptions) {
   const escapedCommand = command.replace(/\"/g, '\\"');
@@ -20,13 +20,16 @@ function runCommand(command: string, childOptions: childProcess.SpawnOptions) {
 
   return new Promise<void>((resolve, reject) => {
     logger.info("Running command: " + command);
-    if (command.includes("=")) {
-      utils.logWarning(
-        clc.yellow(clc.bold("Warning: ")) +
-          "Your command contains '=', it may result in the command not running." +
-          " Please consider removing it.",
-      );
-    }
+    /**
+     * This seems to be inappropriate, as turbo build --filter=some/package uses "=" on the filter flag
+     */
+    // if (command.includes("=")) {
+    //   utils.logWarning(
+    //     clc.yellow(clc.bold("Warning: ")) +
+    //       "Your command contains '=', it may result in the command not running." +
+    //       " Please consider removing it.",
+    //   );
+    // }
     if (translatedCommand === "") {
       return resolve();
     }
