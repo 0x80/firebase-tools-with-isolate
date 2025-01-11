@@ -207,6 +207,10 @@ export type EmulatorsConfig = {
   apphosting?: {
     host?: string;
     port?: number;
+    startCommand?: string;
+    /**
+     * @deprecated
+     */
     startCommandOverride?: string;
     rootDirectory?: string;
   };
