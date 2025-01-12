@@ -14,14 +14,14 @@ clarity.
 
 ## Installation
 
-It is probably best to install this as a local dependency on whatever package you want to deploy to Firebase, as opposed to using a global install. This way the forked binary does not interfere with the original one on your system, and you can easily use the fork on one project will still using the original one on others.
+Add this dependency to the root of your monorepo, and co-locate all off your Firebase configurations there as well, as described in the docs.
 
-It is recommended to use `pnpm` over `npm` or `yarn`. Apart from being fast and
+I encourage you to use `pnpm` over `npm` or `yarn`. Apart from being fast and
 efficient, PNPM has better support for monorepos, and the the lockfile isolation
 code is solid and works in parallel for multiple packages, [unlike NPM](https://github.com/0x80/isolate-package/README.md#npm)
 
 ```bash
-pnpm add firebase-tools-with-isolate -D
+pnpm add firebase-tools-with-isolate -D -w
 ```
 
 Or run the equivalent for NPM or Yarn.
@@ -49,7 +49,54 @@ You have to opt-in to the functions isolate process by setting `functions.isolat
 }
 ```
 
-If you like to see a complete example of a monorepo setup with Typescript and multiple Firebase service deployments check out [mono-ts](https://github.com/0x80/mono-ts)
+If you have a monorepo, your firebase.json file should be located in the root listing all of the packages, emulator settings and other firebase related files. It would look something like this:
+
+```json
+{
+  "functions": [
+    {
+      "source": "services/api",
+      "predeploy": ["turbo build --filter=@repo/api"],
+      "runtime": "nodejs22",
+      "codebase": "api",
+      "isolate": true
+    },
+    {
+      "source": "services/functions",
+      "predeploy": ["turbo build --filter=@repo/functions"],
+      "runtime": "nodejs22",
+      "codebase": "fns",
+      "isolate": true
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "ui": {
+      "enabled": true
+    },
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "pubsub": {
+      "port": 8085
+    }
+  }
+}
+```
+
+If you would like to see a complete working example of a modern monorepo setup check out [mono-ts](https://github.com/0x80/mono-ts)
 
 ## Documentation
 

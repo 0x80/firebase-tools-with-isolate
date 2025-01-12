@@ -206,7 +206,7 @@ export async function prepare(
     }
 
     if (config.isolate === true) {
-      sourceDir = await runIsolate(config);
+      sourceDir = await runIsolate(sourceDirName);
     }
 
     if (backend.someEndpoint(wantBackend, (e) => e.platform === "gcfv2")) {
