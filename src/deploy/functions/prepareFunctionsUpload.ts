@@ -166,7 +166,7 @@ export async function runIsolate(sourceDirName: string): Promise<string> {
     const isolateDir = await isolate(
       sourceDirName !== "."
         ? {
-            config: { targetPackagePath: path.join("./", sourceDirName) },
+            targetPackagePath: path.join("./", sourceDirName),
           }
         : undefined,
     );
