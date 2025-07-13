@@ -71,14 +71,25 @@ export interface Diff {
   destructive: boolean;
 }
 
+export type WarningLevel = "INTERACTIVE_ACK" | "REQUIRE_ACK" | "REQUIRE_FORCE";
+
+export interface Workaround {
+  description: string;
+  reason: string;
+  replaceWith: string;
+}
+
 export interface GraphqlError {
   message: string;
+  path?: (string | number)[];
   locations?: {
     line: number;
     column: number;
   }[];
   extensions?: {
     file?: string;
+    warningLevel?: WarningLevel;
+    workarounds?: Workaround[];
     [key: string]: any;
   };
 }
@@ -135,7 +146,12 @@ export interface Generate {
   dartSdk?: DartSDK;
 }
 
-export interface JavascriptSDK {
+export interface SupportedFrameworks {
+  react?: boolean;
+  angular?: boolean;
+}
+
+export interface JavascriptSDK extends SupportedFrameworks {
   outputDir: string;
   package: string;
   packageJsonDir?: string;
@@ -204,23 +220,33 @@ export interface ExecuteGraphqlRequest {
   query: string;
   operationName?: string;
   variables?: { [key: string]: string };
-  extensions?: { impersonate?: Impersonation };
+  extensions?: { impersonate?: Impersonation; includeDebugDetails?: boolean };
 }
 
-export interface ExecuteGraphqlResponse {
+export interface GraphqlResponse {
   data: Record<string, any>;
   errors: any[];
 }
 
-export interface ExecuteGraphqlResponseError {
+export interface ExecuteOperationRequest {
+  operationName: string;
+  variables?: { [key: string]: string };
+}
+
+export interface GraphqlResponseError {
   error: { code: number; message: string; status: string; details: any[] };
 }
 
+export const isGraphQLResponse = (g: any): g is GraphqlResponse => !!g.data || !!g.errors;
+export const isGraphQLResponseError = (g: any): g is GraphqlResponseError => !!g.error;
+
 interface ImpersonationAuthenticated {
   authClaims: any;
+  includeDebugDetails?: boolean;
 }
 interface ImpersonationUnauthenticated {
   unauthenticated: boolean;
+  includeDebugDetails?: boolean;
 }
 export type Impersonation = ImpersonationAuthenticated | ImpersonationUnauthenticated;
 

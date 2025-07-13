@@ -11,7 +11,7 @@ const cjson = require("cjson");
 import { detectProjectRoot } from "./detectProjectRoot";
 import { FirebaseError } from "./error";
 import * as fsutils from "./fsutils";
-import { promptOnce } from "./prompt";
+import { confirm } from "./prompt";
 import { resolveProjectPath } from "./projectPath";
 import * as utils from "./utils";
 import { getValidator, getErrorMessage } from "./firebaseConfigValidate";
@@ -33,6 +33,7 @@ export class Config {
     "storage",
     "remoteconfig",
     "dataconnect",
+    "apphosting",
   ];
 
   public options: any;
@@ -186,6 +187,9 @@ export class Config {
   }
 
   path(pathName: string) {
+    if (path.isAbsolute(pathName)) {
+      return pathName;
+    }
     const outPath = path.normalize(path.join(this.projectDir, pathName));
     if (path.relative(this.projectDir, outPath).includes("..")) {
       throw new FirebaseError(clc.bold(pathName) + " is outside of project directory", { exit: 1 });
@@ -212,13 +216,21 @@ export class Config {
     }
   }
 
-  writeProjectFile(p: string, content: any) {
-    if (typeof content !== "string") {
-      content = JSON.stringify(content, null, 2) + "\n";
+  writeProjectFile(p: string, content: any): void {
+    const path = this.path(p);
+    fs.ensureFileSync(path);
+    fs.writeFileSync(path, stringifyContent(content), "utf8");
+    switch (p) {
+      case "firebase.json":
+        utils.logSuccess("Wrote configuration info to " + clc.bold("firebase.json"));
+        break;
+      case ".firebaserc":
+        utils.logSuccess("Wrote project information to " + clc.bold(".firebaserc"));
+        break;
+      default:
+        utils.logSuccess("Wrote " + clc.bold(p));
+        break;
     }
-
-    fs.ensureFileSync(this.path(p));
-    fs.writeFileSync(this.path(p), content, "utf8");
   }
 
   projectFileExists(p: string): boolean {
@@ -229,36 +241,45 @@ export class Config {
     fs.removeSync(this.path(p));
   }
 
-  askWriteProjectFile(p: string, content: any, force?: boolean, confirmByDefault?: boolean) {
-    const writeTo = this.path(p);
-    let next;
-    if (typeof content !== "string") {
-      content = JSON.stringify(content, null, 2) + "\n";
+  async confirmWriteProjectFile(
+    path: string,
+    content: any,
+    confirmByDefault?: boolean,
+  ): Promise<boolean> {
+    const writeTo = this.path(path);
+    if (!fsutils.fileExistsSync(writeTo)) {
+      return true;
     }
-    let existingContent: string | undefined;
-    if (fsutils.fileExistsSync(writeTo)) {
-      existingContent = fsutils.readFile(writeTo);
+    const existingContent = fsutils.readFile(writeTo);
+    const newContent = stringifyContent(content);
+    if (existingContent === newContent) {
+      utils.logBullet(clc.bold(path) + " is unchanged");
+      return false;
     }
-    if (existingContent && existingContent !== content && !force) {
-      next = promptOnce({
-        type: "confirm",
-        message: "File " + clc.underline(p) + " already exists. Overwrite?",
-        default: !!confirmByDefault,
-      });
-    } else {
-      next = Promise.resolve(true);
-    }
-
-    return next.then((result: boolean) => {
-      if (existingContent === content) {
-        utils.logBullet(clc.bold(p) + " is unchanged");
-      } else if (result) {
-        this.writeProjectFile(p, content);
-        utils.logSuccess("Wrote " + clc.bold(p));
-      } else {
-        utils.logBullet("Skipping write of " + clc.bold(p));
-      }
+    const shouldWrite = await confirm({
+      message: "File " + clc.underline(path) + " already exists. Overwrite?",
+      default: !!confirmByDefault,
     });
+    if (!shouldWrite) {
+      utils.logBullet("Skipping write of " + clc.bold(path));
+      return false;
+    }
+    return true;
+  }
+
+  async askWriteProjectFile(
+    path: string,
+    content: any,
+    force?: boolean,
+    confirmByDefault?: boolean,
+  ): Promise<void> {
+    if (!force) {
+      const shouldWrite = await this.confirmWriteProjectFile(path, content, confirmByDefault);
+      if (!shouldWrite) {
+        return;
+      }
+    }
+    this.writeProjectFile(path, content);
   }
 
   public static load(options: any, allowMissing?: boolean): Config | null {
@@ -299,4 +320,11 @@ export class Config {
       status: 404,
     });
   }
+}
+
+function stringifyContent(content: any): string {
+  if (typeof content === "string") {
+    return content;
+  }
+  return JSON.stringify(content, null, 2) + "\n";
 }

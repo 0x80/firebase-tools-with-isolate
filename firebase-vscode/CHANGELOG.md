@@ -1,5 +1,91 @@
 ## NEXT
 
+## 1.5.0
+
+- Update internal `firebase-tools` dependency to 14.9.0
+- Update internal `graphql-language-server` dependency
+- Update internal `graphql-language-service-server` dependency
+- [Changed] Graphql Syntax Highlighter is now an extension dependency
+- [Fixed] Language server now recognizes fragments in other files
+
+## 1.4.1
+
+- Update internal `firebase-tools` dependency to 14.6.0
+- [Changed] Updated Gemini Tool name to @FirebaseDataConnect
+
+## 1.4.0
+
+- Update internal `firebase-tools` dependency to 14.4.0
+- [Added] @data-connect tool callable from the Gemini Code Assist extension.
+
+## 1.3.1
+
+- Updated internal `firebase-tools` dependency to 14.2.1
+
+## 1.3.0
+
+- [Fixed] Fixed an issue where adhoc operations would fail to execute
+
+## 1.2.0
+
+- Updated internal `firebase-tools` dependency to 14.2.0
+- [Fixed] Fragments now properly validate for execution
+
+## 1.1.0
+
+- Updated internal `firebase-tools` dependency to 14.1.0
+- [Fixed] User auth will now load without requiring extension sidebar to open
+
+## 1.0.0
+
+- [Breaking] Updated minimum VSCode version requirement to 1.69.0 to ensure node 20 is used
+- Updated internal `firebase-tools` dependency to 14.0.0
+- [Added] Added rerun execution button in variables context
+- [Added] Provide default required variables during execution
+- [Fixed] Fixed an issue where environment variables provided in `extraEnv` were not respected in some cases
+
+## 0.14.2
+
+- Updated internal `firebase-tools` dependency to 13.34.0
+
+## 0.14.1
+
+- Updated internal `firebase-tools` dependency to 13.33.0
+- Updated introspection endpoint to V1
+- Allow unused variables in GraphQL queries and mutations.
+
+## 0.14.0
+
+- Updated internal `firebase-tools` dependency to 13.32.0
+- [Fixed] Graphql Language Server support for Windows
+
+## 0.13.1
+
+- Updated internal `firebase-tools` dependency to 13.31.2
+
+## 0.13.0
+
+- Updated internal `firebase-tools` dependency to 13.30.0
+- [Added] Added `extraEnv` setting to help extension development.
+- [Added] Make Run Local button always present
+
+## 0.12.2
+
+- Updated internal `firebase-tools` dependency to 13.29.3
+- [Fixed] Fixed a bug where results panel would break on API error
+
+## 0.12.1
+
+- Updated internal `firebase-tools` dependency to 13.29.2
+- [Added] Added support for emulator import/export.
+- [Added] Added `debug` setting to run commands with `--debug`
+- [Fixed] Fixed a bug where emulator issues weren't being surfaced
+
+## 0.12.0
+
+- Updated internal firebase-tools dependency to 13.29.1
+- [Fixed] Fixed firebase binary detection for analytics
+
 ## 0.11.1
 
 - [Fixed] Fixed IDX analytics issue

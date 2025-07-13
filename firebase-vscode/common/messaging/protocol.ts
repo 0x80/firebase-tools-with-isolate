@@ -55,8 +55,11 @@ export interface WebviewToExtensionParamsMap {
   /** Calls the `firebase init` CLI */
   runFirebaseInit: void;
 
-  /** Calls the `firebase init` CLI */
+  /** Calls the `firebase emulators:start` CLI */
   runStartEmulators: void;
+
+  /** Calls the `firebase emulators:export` CLI */
+  runEmulatorsExport: void;
 
   /**
    * Show a UI message using the vscode interface
@@ -100,6 +103,14 @@ export interface WebviewToExtensionParamsMap {
   /** Opens generated docs */
   "fdc.open-docs": void;
 
+  /** Opens settings page searching for Data Connect emualtor settings */
+  "fdc.open-emulator-settings": void;
+
+  /** Clears data from a running data connect emulator */
+  "fdc.clear-emulator-data": void;
+
+  "firebase.activate.gemini": void;
+
   // Initialize "result" tab.
   getDataConnectResults: void;
 
@@ -107,6 +118,11 @@ export interface WebviewToExtensionParamsMap {
   executeLogin: void;
 
   getDocsLink: void;
+
+  openJSONFile: string;
+
+  // called from execution panel
+  rerunExecution: void;
 }
 
 export interface DataConnectResults {
@@ -166,8 +182,11 @@ export interface ExtensionToWebviewParamsMap {
   notifyPreviewChannelResponse: { id: string };
 
   // data connect specific
+  notifyDataConnectArgs: string;
+
   notifyDataConnectResults: DataConnectResults;
-  notifyDataConnectRequiredArgs: { args: string[] };
+
+  notifyLastOperation: string;
 
   notifyIsLoadingUser: boolean;
 

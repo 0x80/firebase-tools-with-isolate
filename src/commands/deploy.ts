@@ -23,6 +23,7 @@ export const VALID_DEPLOY_TARGETS = [
   "remoteconfig",
   "extensions",
   "dataconnect",
+  "apphosting",
 ];
 export const TARGET_PERMISSIONS: Record<(typeof VALID_DEPLOY_TARGETS)[number], string[]> = {
   database: ["firebasedatabase.instances.update"],
@@ -88,13 +89,13 @@ export const command = new Command("deploy")
       "When filtering based on codebases, use colons to specify codebase names " +
       '(e.g. "--only functions:codebase1:func1,functions:codebase2:group1.subgroup1"). ' +
       "For data connect, can specify filters with colons to deploy only a service, connector, or schema" +
-      '(e.g. "--only dataconnect:serviceId,dataconnect:serviceId:connectorId,dataconnect:serviceId:schema"). ',
+      '(e.g. "--only dataconnect:serviceId,dataconnect:serviceId:connectorId,dataconnect:serviceId:schema")',
   )
   .option("--except <targets>", 'deploy to all targets except specified (e.g. "database")')
   .option(
     "--dry-run",
-    "Perform a dry run of your deployment. Validates your changes and builds your code without deploying any changes to your project. " +
-      "In order to provide better validation, this may still enable APIs on the target project.",
+    "perform a dry run of your deployment. Validates your changes and builds your code without deploying any changes to your project. " +
+      "In order to provide better validation, this may still enable APIs on the target project",
   )
   .before(requireConfig)
   .before((options) => {

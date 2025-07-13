@@ -23,19 +23,20 @@ describe("utils", () => {
     beforeEach(() => {
       prompt = sinon.stub(promptImport);
     });
+    afterEach(() => {
+      sinon.verifyAndRestore();
+    });
     it("should prompt with the correct options", async () => {
       const apphostingFileNameToPathMap = new Map<string, string>([
         ["apphosting.yaml", "/parent/cwd/apphosting.yaml"],
         ["apphosting.staging.yaml", "/parent/apphosting.staging.yaml"],
       ]);
 
-      prompt.promptOnce.returns(Promise.resolve());
+      prompt.select.returns(Promise.resolve());
 
       await utils.promptForAppHostingYaml(apphostingFileNameToPathMap);
 
-      expect(prompt.promptOnce).to.have.been.calledWith({
-        name: "apphosting-yaml",
-        type: "list",
+      expect(prompt.select).to.have.been.calledWith({
         message: "Please select an App Hosting config:",
         choices: [
           {

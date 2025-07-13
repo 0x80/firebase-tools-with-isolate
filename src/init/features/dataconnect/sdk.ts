@@ -1,11 +1,16 @@
 import * as yaml from "yaml";
-import * as fs from "fs";
 import * as clc from "colorette";
 import * as path from "path";
 
 import { dirExistsSync } from "../../../fsutils";
-import { promptForDirectory, promptOnce } from "../../../prompt";
-import { readFirebaseJson, getPlatformFromFolder } from "../../../dataconnect/fileUtils";
+import { checkbox, select } from "../../../prompt";
+import {
+  readFirebaseJson,
+  getPlatformFromFolder,
+  getFrameworksFromPackageJson,
+  resolvePackageJson,
+  SUPPORTED_FRAMEWORKS,
+} from "../../../dataconnect/fileUtils";
 import { Config } from "../../../config";
 import { Setup } from "../..";
 import { load } from "../../../dataconnect/load";
@@ -16,11 +21,13 @@ import {
   JavascriptSDK,
   KotlinSDK,
   Platform,
+  SupportedFrameworks,
 } from "../../../dataconnect/types";
 import { DataConnectEmulator } from "../../../emulator/dataconnectEmulator";
 import { FirebaseError } from "../../../error";
 import { camelCase, snakeCase, upperFirst } from "lodash";
-import { logSuccess, logBullet } from "../../../utils";
+import { logSuccess, logBullet, promptForDirectory, envOverride, logWarning } from "../../../utils";
+import { getGlobalDefaultAccount } from "../../../auth";
 
 export const FDC_APP_FOLDER = "_FDC_APP_FOLDER";
 export type SDKInfo = {
@@ -30,7 +37,7 @@ export type SDKInfo = {
 };
 export async function doSetup(setup: Setup, config: Config): Promise<void> {
   const sdkInfo = await askQuestions(setup, config);
-  await actuate(sdkInfo);
+  await actuate(sdkInfo, config);
   logSuccess(
     `If you'd like to add more generated SDKs to your app your later, run ${clc.bold("firebase init dataconnect:sdk")} again`,
   );
@@ -42,11 +49,11 @@ async function askQuestions(setup: Setup, config: Config): Promise<SDKInfo> {
   const serviceInfos = await Promise.all(
     serviceCfgs.map((c) => load(setup.projectId || "", config, c.source)),
   );
-  const connectorChoices: { name: string; value: ConnectorInfo }[] = serviceInfos
+  const connectorChoices: connectorChoice[] = serviceInfos
     .map((si) => {
       return si.connectorInfo.map((ci) => {
         return {
-          name: `${si.dataConnectYaml.serviceId}/${ci.connectorYaml.connectorId}`,
+          name: `${si.dataConnectYaml.location}/${si.dataConnectYaml.serviceId}/${ci.connectorYaml.connectorId}`,
           value: ci,
         };
       });
@@ -85,28 +92,42 @@ async function askQuestions(setup: Setup, config: Config): Promise<SDKInfo> {
       { name: "Android (Kotlin)", value: Platform.ANDROID },
       { name: "Flutter (Dart)", value: Platform.FLUTTER },
     ];
-    targetPlatform = await promptOnce({
+    targetPlatform = await select<Platform>({
       message: "Which platform do you want to set up a generated SDK for?",
-      type: "list",
       choices: platforms,
     });
   } else {
     logSuccess(`Detected ${targetPlatform} app in directory ${appDir}`);
   }
 
-  const connectorInfo: ConnectorInfo = await promptOnce({
-    message: "Which connector do you want set up a generated SDK for?",
-    type: "list",
-    choices: connectorChoices,
-  });
+  const connectorInfo = await chooseExistingConnector(connectorChoices);
 
   const connectorYaml = JSON.parse(JSON.stringify(connectorInfo.connectorYaml)) as ConnectorYaml;
-  const newConnectorYaml = generateSdkYaml(
+  const newConnectorYaml = await generateSdkYaml(
     targetPlatform,
     connectorYaml,
     connectorInfo.directory,
     appDir,
   );
+  if (targetPlatform === Platform.WEB) {
+    const unusedFrameworks = SUPPORTED_FRAMEWORKS.filter(
+      (framework) => !newConnectorYaml!.generate?.javascriptSdk![framework],
+    );
+    if (unusedFrameworks.length > 0) {
+      const additionalFrameworks = await checkbox<(typeof SUPPORTED_FRAMEWORKS)[number]>({
+        message:
+          "Which frameworks would you like to generate SDKs for? " +
+          "Press Space to select features, then Enter to confirm your choices.",
+        choices: SUPPORTED_FRAMEWORKS.map((frameworkStr) => ({
+          value: frameworkStr,
+          checked: newConnectorYaml?.generate?.javascriptSdk?.[frameworkStr],
+        })),
+      });
+      for (const framework of additionalFrameworks) {
+        newConnectorYaml!.generate!.javascriptSdk![framework] = true;
+      }
+    }
+  }
 
   // TODO: Prompt user about adding generated paths to .gitignore
   const connectorYamlContents = yaml.stringify(newConnectorYaml);
@@ -115,12 +136,49 @@ async function askQuestions(setup: Setup, config: Config): Promise<SDKInfo> {
   return { connectorYamlContents, connectorInfo, displayIOSWarning };
 }
 
-export function generateSdkYaml(
+interface connectorChoice {
+  name: string; // {location}/{serviceId}/{connectorId}
+  value: ConnectorInfo;
+}
+
+/**
+ * Picks an existing connector from those present in the local workspace.
+ *
+ * Firebase Console can provide `FDC_CONNECTOR` environment variable.
+ * If its is present, chooseExistingConnector try to match it with any existing connectors
+ * and short-circuit the prompt.
+ *
+ * `FDC_CONNECTOR` should have the same `<location>/<serviceId>/<connectorId>`.
+ * @param choices
+ */
+async function chooseExistingConnector(choices: connectorChoice[]): Promise<ConnectorInfo> {
+  if (choices.length === 1) {
+    // Only one connector available, use it.
+    return choices[0].value;
+  }
+  const connectorEnvVar = envOverride("FDC_CONNECTOR", "");
+  if (connectorEnvVar) {
+    const existingConnector = choices.find((c) => c.name === connectorEnvVar);
+    if (existingConnector) {
+      logBullet(`Picking up the existing connector ${clc.bold(connectorEnvVar)}.`);
+      return existingConnector.value;
+    }
+    logWarning(
+      `Unable to pick up an existing connector based on FDC_CONNECTOR=${connectorEnvVar}.`,
+    );
+  }
+  return await select<ConnectorInfo>({
+    message: "Which connector do you want set up a generated SDK for?",
+    choices: choices,
+  });
+}
+
+export async function generateSdkYaml(
   targetPlatform: Platform,
   connectorYaml: ConnectorYaml,
   connectorDir: string,
   appDir: string,
-): ConnectorYaml {
+): Promise<ConnectorYaml> {
   if (!connectorYaml.generate) {
     connectorYaml.generate = {};
   }
@@ -135,14 +193,24 @@ export function generateSdkYaml(
 
   if (targetPlatform === Platform.WEB) {
     const pkg = `${connectorYaml.connectorId}-connector`;
+    const packageJsonDir = path.relative(connectorDir, appDir);
     const javascriptSdk: JavascriptSDK = {
       outputDir: path.relative(connectorDir, path.join(appDir, `dataconnect-generated/js/${pkg}`)),
       package: `@firebasegen/${pkg}`,
       // If appDir has package.json, Emulator would add Generated JS SDK to `package.json`.
       // Otherwise, emulator would ignore it. Always add it here in case `package.json` is added later.
       // TODO: Explore other platforms that can be automatically installed. Dart? Android?
-      packageJsonDir: path.relative(connectorDir, appDir),
+      packageJsonDir,
     };
+    const packageJson = await resolvePackageJson(appDir);
+    if (packageJson) {
+      const frameworksUsed = getFrameworksFromPackageJson(packageJson);
+      for (const framework of frameworksUsed) {
+        logBullet(`Detected ${framework} app. Enabling ${framework} generated SDKs.`);
+        javascriptSdk[framework] = true;
+      }
+    }
+
     connectorYaml.generate.javascriptSdk = javascriptSdk;
   }
 
@@ -178,20 +246,48 @@ export function generateSdkYaml(
   return connectorYaml;
 }
 
-export async function actuate(sdkInfo: SDKInfo) {
+export async function actuate(sdkInfo: SDKInfo, config: Config) {
   const connectorYamlPath = `${sdkInfo.connectorInfo.directory}/connector.yaml`;
-  fs.writeFileSync(connectorYamlPath, sdkInfo.connectorYamlContents, "utf8");
-  logBullet(`Wrote new config to ${connectorYamlPath}`);
+  logBullet(`Writing your new SDK configuration to ${connectorYamlPath}`);
+  await config.askWriteProjectFile(
+    path.relative(config.projectDir, connectorYamlPath),
+    sdkInfo.connectorYamlContents,
+    /* force=*/ false,
+    /* confirmByDefault=*/ true,
+  );
+
+  const account = getGlobalDefaultAccount();
   await DataConnectEmulator.generate({
     configDir: sdkInfo.connectorInfo.directory,
     connectorId: sdkInfo.connectorInfo.connectorYaml.connectorId,
+    account,
   });
   logBullet(`Generated SDK code for ${sdkInfo.connectorInfo.connectorYaml.connectorId}`);
   if (sdkInfo.connectorInfo.connectorYaml.generate?.swiftSdk && sdkInfo.displayIOSWarning) {
     logBullet(
       clc.bold(
-        "Please follow the instructions here to add your generated sdk to your XCode project:\n\thttps://firebase.google.com/docs/data-connect/gp/ios-sdk#set-client",
+        "Please follow the instructions here to add your generated sdk to your XCode project:\n\thttps://firebase.google.com/docs/data-connect/ios-sdk#set-client",
       ),
+    );
+  }
+  if (sdkInfo.connectorInfo.connectorYaml.generate?.javascriptSdk) {
+    for (const framework of SUPPORTED_FRAMEWORKS) {
+      if (sdkInfo.connectorInfo.connectorYaml!.generate!.javascriptSdk![framework]) {
+        logInfoForFramework(framework);
+      }
+    }
+  }
+}
+
+function logInfoForFramework(framework: keyof SupportedFrameworks) {
+  if (framework === "react") {
+    logBullet(
+      "Visit https://firebase.google.com/docs/data-connect/web-sdk#react for more information on how to set up React Generated SDKs for Firebase Data Connect",
+    );
+  } else if (framework === "angular") {
+    // TODO(mtewani): Replace this with `ng add @angular/fire` when ready.
+    logBullet(
+      "Run `npm i --save @angular/fire @tanstack-query-firebase/angular @tanstack/angular-query-experimental` to install angular sdk dependencies.\nVisit https://github.com/invertase/tanstack-query-firebase/tree/main/packages/angular for more information on how to set up Angular Generated SDKs for Firebase Data Connect",
     );
   }
 }

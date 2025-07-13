@@ -28,7 +28,7 @@ import { LoggingEmulator } from "./loggingEmulator";
 import * as dbRulesConfig from "../database/rulesConfig";
 import { EmulatorLogger, Verbosity } from "./emulatorLogger";
 import { EmulatorHubClient } from "./hubClient";
-import { confirm, promptOnce } from "../prompt";
+import { confirm } from "../prompt";
 import {
   FLAG_EXPORT_ON_EXIT_NAME,
   JAVA_DEPRECATION_WARNING,
@@ -61,6 +61,8 @@ import { TasksEmulator } from "./tasksEmulator";
 import { AppHostingEmulator } from "./apphosting";
 import { sendVSCodeMessage, VSCODE_MESSAGE } from "../dataconnect/webhook";
 import { dataConnectLocalConnString } from "../api";
+import { AppHostingSingle } from "../firebaseConfig";
+import { resolveProjectPath } from "../projectPath";
 
 const START_LOGGING_EMULATOR = utils.envOverride(
   "START_LOGGING_EMULATOR",
@@ -558,6 +560,8 @@ export async function startAll(
     await startEmulator(extensionEmulator);
   }
 
+  const account = getProjectDefaultAccount(options.projectRoot);
+
   if (emulatableBackends.length) {
     if (!listenForEmulator.functions || !listenForEmulator.eventarc || !listenForEmulator.tasks) {
       // We did not know that we need Functions and Eventarc earlier but now we do.
@@ -598,8 +602,6 @@ export async function startAll(
         )}`,
       );
     }
-
-    const account = getProjectDefaultAccount(options.projectRoot);
 
     // TODO(b/213241033): Figure out how to watch for changes to extensions .env files & reload triggers when they change.
     const functionsEmulator = new FunctionsEmulator({
@@ -885,6 +887,7 @@ export async function startAll(
       enable_output_generated_sdk: true, // TODO: source from arguments
       enable_output_schema_extensions: true,
       debug: options.debug,
+      account,
     };
 
     if (exportMetadata.dataconnect) {
@@ -904,14 +907,13 @@ export async function startAll(
         );
         if (
           !options.nonInteractive &&
-          !(await promptOnce({
-            type: "confirm",
+          !(await confirm({
             message: `Do you wish to continue and overwrite data in ${dataDirectory}?`,
             default: false,
           }))
         ) {
           await cleanShutdown();
-          return { deprecationNotices: [] };
+          throw new FirebaseError("Command aborted");
         }
       }
 
@@ -969,11 +971,28 @@ export async function startAll(
    * app hosting emulator may depend on other emulators (i.e auth, firestore,
    * storage, etc).
    */
-  const apphostingConfig = options.config.src.emulators?.[Emulators.APPHOSTING];
+  const apphostingEmulatorConfig = options.config.src.emulators?.[Emulators.APPHOSTING];
 
   if (listenForEmulator.apphosting) {
+    const rootDirectory = apphostingEmulatorConfig?.rootDirectory;
+    const backendRoot = resolveProjectPath({}, rootDirectory ?? "./");
+
+    // It doesn't seem as though App Hosting emulator supports multiple backends, infer the correct one
+    // from the root directory.
+    let apphostingConfig: AppHostingSingle | undefined;
+    if (Array.isArray(options.config.src.apphosting)) {
+      const matchingAppHostingConfig = options.config.src.apphosting.filter(
+        (config) => resolveProjectPath({}, path.join(".", config.rootDir ?? "/")) === backendRoot,
+      );
+      if (matchingAppHostingConfig.length === 1) {
+        apphostingConfig = matchingAppHostingConfig[0];
+      }
+    } else {
+      apphostingConfig = options.config.src.apphosting;
+    }
+
     const apphostingAddr = legacyGetFirstAddr(Emulators.APPHOSTING);
-    if (apphostingConfig?.startCommandOverride) {
+    if (apphostingEmulatorConfig?.startCommandOverride) {
       const apphostingLogger = EmulatorLogger.forEmulator(Emulators.APPHOSTING);
       apphostingLogger.logLabeled(
         "WARN",
@@ -982,10 +1001,13 @@ export async function startAll(
       );
     }
     const apphostingEmulator = new AppHostingEmulator({
+      projectId: options.project,
+      backendId: apphostingConfig?.backendId,
       host: apphostingAddr.host,
       port: apphostingAddr.port,
-      startCommand: apphostingConfig?.startCommand || apphostingConfig?.startCommandOverride,
-      rootDirectory: apphostingConfig?.rootDirectory,
+      startCommand:
+        apphostingEmulatorConfig?.startCommand || apphostingEmulatorConfig?.startCommandOverride,
+      rootDirectory,
       options,
     });
 
@@ -1112,7 +1134,7 @@ export async function exportEmulatorData(exportPath: string, options: any, initi
   const exportAbsPath = path.resolve(exportPath);
   if (!fs.existsSync(exportAbsPath)) {
     utils.logBullet(`Creating export directory ${exportAbsPath}`);
-    fs.mkdirSync(exportAbsPath);
+    fs.mkdirSync(exportAbsPath, { recursive: true });
   }
 
   // Check if there is already an export there and prompt the user about deleting it

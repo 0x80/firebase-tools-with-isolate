@@ -58,21 +58,6 @@ export const ALL_EXPERIMENTS = experiments({
     public: true,
   },
 
-  // permanent experiment
-  automaticallydeletegcfartifacts: {
-    shortDescription: "Control whether functions cleans up images after deploys",
-    fullDescription:
-      "To control costs, Firebase defaults to automatically deleting containers " +
-      "created during the build process. This has the side-effect of preventing " +
-      "users from rolling back to previous revisions using the Run API. To change " +
-      `this behavior, call ${bold("experiments:disable deletegcfartifactsondeploy")} ` +
-      `consider also calling ${bold("experiments:enable deletegcfartifacts")} ` +
-      `to enable the new command ${bold("functions:deletegcfartifacts")} which` +
-      "lets you clean up images manually",
-    public: true,
-    default: true,
-  },
-
   // Emulator experiments
   emulatoruisnapshot: {
     shortDescription: "Load pre-release versions of the emulator UI",
@@ -134,6 +119,18 @@ export const ALL_EXPERIMENTS = experiments({
   genkit: {
     shortDescription: "Enable Genkit related features.",
     fullDescription: "Enable Genkit related features.",
+    default: true,
+    public: false,
+  },
+  appsinit: {
+    shortDescription: "Adds experimental `apps:init` command.",
+    fullDescription:
+      "Adds experimental `apps:init` command. When run from an app directory, this command detects the app's platform and configures required files.",
+    default: false,
+    public: true,
+  },
+  mcp: {
+    shortDescription: "Adds experimental `firebase mcp` command for running a Firebase MCP server.",
     default: true,
     public: false,
   },

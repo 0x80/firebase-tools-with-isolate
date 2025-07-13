@@ -54,11 +54,18 @@ describe("init dataconnect", () => {
         expectEnsureSchemaGQL: false,
       },
       {
-        desc: "exiting project should use existing directory",
+        desc: "existing project should use existing directory",
         requiredInfo: mockRequiredInfo(),
         config: mockConfig({ dataconnect: { source: "not-dataconnect" } }),
         expectedSource: "not-dataconnect",
-        expectedFiles: ["not-dataconnect/dataconnect.yaml"],
+        expectedFiles: [
+          "not-dataconnect/dataconnect.yaml",
+          // Populate the default template.
+          "not-dataconnect/schema/schema.gql",
+          "not-dataconnect/connector/connector.yaml",
+          "not-dataconnect/connector/queries.gql",
+          "not-dataconnect/connector/mutations.gql",
+        ],
         expectCSQLProvisioning: false,
         expectEnsureSchemaGQL: false,
       },
@@ -125,6 +132,18 @@ describe("init dataconnect", () => {
         desc: "should handle schema with no files",
         requiredInfo: mockRequiredInfo({
           schemaGql: [],
+          connectors: [
+            {
+              id: "my-connector",
+              path: "hello",
+              files: [
+                {
+                  path: "queries.gql",
+                  content: "## Fake GQL",
+                },
+              ],
+            },
+          ],
         }),
         config: mockConfig({
           dataconnect: {
@@ -132,7 +151,11 @@ describe("init dataconnect", () => {
           },
         }),
         expectedSource: "dataconnect",
-        expectedFiles: ["dataconnect/dataconnect.yaml"],
+        expectedFiles: [
+          "dataconnect/dataconnect.yaml",
+          "dataconnect/hello/connector.yaml",
+          "dataconnect/hello/queries.gql",
+        ],
         expectCSQLProvisioning: false,
         expectEnsureSchemaGQL: true,
       },
@@ -147,10 +170,11 @@ describe("init dataconnect", () => {
           {
             projectId: "test-project",
             rcfile: MOCK_RC,
-            config: c.config,
+            config: c.config.src,
+            featureInfo: { dataconnect: c.requiredInfo },
           },
           c.config,
-          c.requiredInfo,
+          {},
         );
         expect(c.config.get("dataconnect.source")).to.equal(c.expectedSource);
         if (c.expectEnsureSchemaGQL) {
@@ -158,6 +182,41 @@ describe("init dataconnect", () => {
         }
         expect(askWriteProjectFileStub.args.map((a) => a[0])).to.deep.equal(c.expectedFiles);
         expect(provisionCSQLStub.called).to.equal(c.expectCSQLProvisioning);
+      });
+    }
+  });
+
+  describe("toDNSCompatibleId", () => {
+    const cases: { description: string; input: string; expected: string }[] = [
+      {
+        description: "Should noop compatible strings",
+        input: "this-is-compatible",
+        expected: "this-is-compatible",
+      },
+      {
+        description: "Should lower case",
+        input: "This-Is-Compatible",
+        expected: "this-is-compatible",
+      },
+      {
+        description: "Should strip special characters",
+        input: "this-is-compatible?~!@#$%^&*()_+=",
+        expected: "this-is-compatible",
+      },
+      {
+        description: "Should strip trailing and leading -",
+        input: "---this-is-compatible---",
+        expected: "this-is-compatible",
+      },
+      {
+        description: "Should cut to 63 characters",
+        input: "a".repeat(1000),
+        expected: "a".repeat(63),
+      },
+    ];
+    for (const c of cases) {
+      it(c.description, () => {
+        expect(init.toDNSCompatibleId(c.input)).to.equal(c.expected);
       });
     }
   });

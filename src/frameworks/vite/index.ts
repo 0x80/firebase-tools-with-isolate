@@ -5,7 +5,7 @@ import { copy, pathExists } from "fs-extra";
 import { join } from "path";
 import { stripVTControlCharacters } from "node:util";
 import { FrameworkType, SupportLevel } from "../interfaces";
-import { promptOnce } from "../../prompt";
+import { select } from "../../prompt";
 import {
   simpleProxy,
   warnIfCustomBuildScript,
@@ -17,7 +17,7 @@ import {
 export const name = "Vite";
 export const support = SupportLevel.Experimental;
 export const type = FrameworkType.Toolchain;
-export const supportedRange = "3 - 5";
+export const supportedRange = "3 - 6";
 
 export const DEFAULT_BUILD_SCRIPT = ["vite build", "tsc && vite build"];
 
@@ -25,8 +25,7 @@ export const initViteTemplate = (template: string) => async (setup: any, config:
   await init(setup, config, template);
 
 export async function init(setup: any, config: any, baseTemplate: string = "vanilla") {
-  const template = await promptOnce({
-    type: "list",
+  const template = await select({
     default: "JavaScript",
     message: "What language would you like to use?",
     choices: [

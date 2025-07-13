@@ -96,18 +96,26 @@ export class OperationCodeLensProvider extends ComputedCodeLensProvider {
         const service = fdcConfigs.findEnclosingServiceForPath(
           document.fileName,
         );
-
         if (service) {
-          if (this.emulatorsController.areEmulatorsRunning()) {
-            codeLenses.push(
-              new vscode.CodeLens(range, {
-                title: `$(play) Run (local)`,
-                command: "firebase.dataConnect.executeOperation",
-                tooltip: "Execute the operation (⌘+enter or Ctrl+Enter)",
-                arguments: [x, operationLocation, InstanceType.LOCAL],
-              }),
-            );
-          }
+          // For demo purposes only
+          // codeLenses.push(
+          //   new vscode.CodeLens(range, {
+          //     title: `$(play) Refine Operation`,
+          //     command: "firebase.dataConnect.refineOperation",
+          //     tooltip:
+          //       "Execute the operation (⌘+enter or Ctrl+Enter)",
+          //     arguments: [x, operationLocation, InstanceType.LOCAL],
+          //   }),
+          // );
+
+          codeLenses.push(
+            new vscode.CodeLens(range, {
+              title: `$(play) Run (local)`,
+              command: "firebase.dataConnect.executeOperation",
+              tooltip: "Execute the operation (⌘+enter or Ctrl+Enter)",
+              arguments: [x, operationLocation, InstanceType.LOCAL],
+            }),
+          );
 
           codeLenses.push(
             new vscode.CodeLens(range, {
@@ -137,10 +145,6 @@ export class SchemaCodeLensProvider extends ComputedCodeLensProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken,
   ): vscode.CodeLens[] {
-    if (!this.emulatorsController.areEmulatorsRunning) {
-      return [];
-    }
-
     const codeLenses: vscode.CodeLens[] = [];
 
     // TODO: replace w/ online-parser to work with malformed documents
@@ -151,6 +155,18 @@ export class SchemaCodeLensProvider extends ComputedCodeLensProvider {
         const line = x.loc.startToken.line - 1;
         const range = new vscode.Range(line, 0, line, 0);
         const documentPath = document.fileName;
+
+        // Add only at top of document
+        // if (line === 0) {
+        //   codeLenses.push(
+        //     new vscode.CodeLens(range, {
+        //       title: `Generate Schema`,
+        //       command: "firebase.dataConnect.generateSchema",
+        //       tooltip: "Generate a new schema",
+        //       arguments: [document.getText(), documentPath],
+        //     }),
+        //   );
+        // }
 
         codeLenses.push(
           new vscode.CodeLens(range, {

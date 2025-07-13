@@ -31,6 +31,7 @@ describe("cloudfunctionsv2", () => {
     codebase: projectConfig.DEFAULT_CODEBASE,
     runServiceId: "service",
     source: { storageSource: CLOUD_FUNCTION_V2_SOURCE },
+    state: "ACTIVE",
   };
 
   const CLOUD_FUNCTION_V2: cloudfunctionsv2.InputCloudFunction = {
@@ -235,7 +236,7 @@ describe("cloudfunctionsv2", () => {
         labels: {
           ...CLOUD_FUNCTION_V2.labels,
           "deployment-callable": "true",
-          "genkit-action": "flows/flow",
+          "genkit-action": "true",
         },
       });
     });
@@ -351,7 +352,7 @@ describe("cloudfunctionsv2", () => {
           },
           retry: false,
         },
-        serviceAccount: "sa",
+        serviceAccount: "sa@google.com",
       };
 
       const saGcfFunction: cloudfunctionsv2.InputCloudFunction = {
@@ -365,14 +366,14 @@ describe("cloudfunctionsv2", () => {
             },
           ],
           retryPolicy: "RETRY_POLICY_DO_NOT_RETRY",
-          serviceAccountEmail: "sa",
+          serviceAccountEmail: "sa@google.com",
         },
         serviceConfig: {
           ...CLOUD_FUNCTION_V2.serviceConfig,
           environmentVariables: {
             FUNCTION_SIGNATURE_TYPE: "cloudevent",
           },
-          serviceAccountEmail: "sa",
+          serviceAccountEmail: "sa@google.com",
         },
       };
 
@@ -417,6 +418,38 @@ describe("cloudfunctionsv2", () => {
       ).to.deep.equal({
         ...CLOUD_FUNCTION_V2,
         labels: { ...CLOUD_FUNCTION_V2.labels, [HASH_LABEL]: "my-hash" },
+      });
+    });
+
+    it("should expand shorthand service account to full email", () => {
+      expect(
+        cloudfunctionsv2.functionFromEndpoint({
+          ...ENDPOINT,
+          serviceAccount: "sa@",
+          httpsTrigger: {},
+        }),
+      ).to.deep.equal({
+        ...CLOUD_FUNCTION_V2,
+        serviceConfig: {
+          ...CLOUD_FUNCTION_V2.serviceConfig,
+          serviceAccountEmail: `sa@${ENDPOINT.project}.iam.gserviceaccount.com`,
+        },
+      });
+    });
+
+    it("should handle null service account", () => {
+      expect(
+        cloudfunctionsv2.functionFromEndpoint({
+          ...ENDPOINT,
+          serviceAccount: null,
+          httpsTrigger: {},
+        }),
+      ).to.deep.equal({
+        ...CLOUD_FUNCTION_V2,
+        serviceConfig: {
+          ...CLOUD_FUNCTION_V2.serviceConfig,
+          serviceAccountEmail: null,
+        },
       });
     });
   });
@@ -654,29 +687,6 @@ describe("cloudfunctionsv2", () => {
       });
     });
 
-    it("should translate genkit callables", () => {
-      expect(
-        cloudfunctionsv2.endpointFromFunction({
-          ...HAVE_CLOUD_FUNCTION_V2,
-          labels: {
-            "deployment-callable": "true",
-            "genkit-action": "flows/flow",
-          },
-        }),
-      ).to.deep.equal({
-        ...ENDPOINT,
-        callableTrigger: {
-          genkitAction: "flows/flow",
-        },
-        platform: "gcfv2",
-        uri: GCF_URL,
-        labels: {
-          "deployment-callable": "true",
-          "genkit-action": "flows/flow",
-        },
-      });
-    });
-
     it("should copy optional fields", () => {
       const extraFields: backend.ServiceConfiguration = {
         ingressSettings: "ALLOW_ALL",
@@ -833,6 +843,71 @@ describe("cloudfunctionsv2", () => {
 
       expect(errCaught, "should have caught an error").to.be.true;
       expect(nock.isDone()).to.be.true;
+    });
+  });
+
+  describe("createFunction", () => {
+    it("should set default environment variables", async () => {
+      const testFunction = {
+        ...CLOUD_FUNCTION_V2,
+        name: "projects/project/locations/region/functions/id",
+        serviceConfig: {
+          ...CLOUD_FUNCTION_V2.serviceConfig,
+          environmentVariables: {},
+        },
+        buildConfig: {
+          ...CLOUD_FUNCTION_V2.buildConfig,
+          environmentVariables: {},
+        },
+      };
+
+      const scope = nock(functionsV2Origin())
+        .post("/v2/projects/project/locations/region/functions", (body) => {
+          expect(body.serviceConfig.environmentVariables).to.have.property(
+            "LOG_EXECUTION_ID",
+            "true",
+          );
+          expect(body.serviceConfig.environmentVariables).to.have.property(
+            "FUNCTION_TARGET",
+            "function",
+          );
+          expect(body.buildConfig.environmentVariables).to.have.property(
+            "GOOGLE_NODE_RUN_SCRIPTS",
+            "",
+          );
+          return true;
+        })
+        .query({ functionId: "id" })
+        .reply(200, { name: "operations/123", done: true });
+
+      await cloudfunctionsv2.createFunction(testFunction);
+      expect(scope.isDone()).to.be.true;
+    });
+  });
+
+  describe("updateFunction", () => {
+    it("should set default environment variables", async () => {
+      const scope = nock(functionsV2Origin())
+        .patch("/v2/projects/project/locations/region/functions/id", (body) => {
+          expect(body.serviceConfig.environmentVariables).to.have.property(
+            "LOG_EXECUTION_ID",
+            "true",
+          );
+          expect(body.serviceConfig.environmentVariables).to.have.property(
+            "FUNCTION_TARGET",
+            "function",
+          );
+          expect(body.buildConfig.environmentVariables).to.have.property(
+            "GOOGLE_NODE_RUN_SCRIPTS",
+            "",
+          );
+          return true;
+        })
+        .query(true) // Accept any query parameters
+        .reply(200, { name: "operations/123", done: true });
+
+      await cloudfunctionsv2.updateFunction(CLOUD_FUNCTION_V2);
+      expect(scope.isDone()).to.be.true;
     });
   });
 });

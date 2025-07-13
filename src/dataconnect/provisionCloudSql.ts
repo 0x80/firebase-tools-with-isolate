@@ -7,20 +7,13 @@ import { logger } from "../logger";
 
 const GOOGLE_ML_INTEGRATION_ROLE = "roles/aiplatform.user";
 
-import {
-  getFreeTrialInstanceId,
-  freeTrialTermsLink,
-  printFreeTrialUnavailable,
-  checkFreeTrialInstanceUsed,
-} from "./freeTrial";
-import { FirebaseError } from "../error";
+import { freeTrialTermsLink, checkFreeTrialInstanceUsed } from "./freeTrial";
 
 export async function provisionCloudSql(args: {
   projectId: string;
-  locationId: string;
+  location: string;
   instanceId: string;
   databaseId: string;
-  configYamlPath: string;
   enableGoogleMlIntegration: boolean;
   waitForCreation: boolean;
   silent?: boolean;
@@ -29,10 +22,9 @@ export async function provisionCloudSql(args: {
   let connectionName = ""; // Not used yet, will be used for schema migration
   const {
     projectId,
-    locationId,
+    location,
     instanceId,
     databaseId,
-    configYamlPath,
     enableGoogleMlIntegration,
     waitForCreation,
     silent,
@@ -69,30 +61,31 @@ export async function provisionCloudSql(args: {
     if (err.status !== 404) {
       throw err;
     }
-    const freeTrialInstanceId = await getFreeTrialInstanceId(projectId);
-    if (await checkFreeTrialInstanceUsed(projectId)) {
-      printFreeTrialUnavailable(projectId, configYamlPath, freeTrialInstanceId);
-      throw new FirebaseError("No-cost Cloud SQL trial has already been used on this project.");
-    }
+    cmekWarning();
     const cta = dryRun ? "It will be created on your next deploy" : "Creating it now.";
+    const freeTrialUsed = await checkFreeTrialInstanceUsed(projectId);
     silent ||
       utils.logLabeledBullet(
         "dataconnect",
-        `CloudSQL instance '${instanceId}' not found.` +
-          cta +
-          `\nThis instance is provided under the terms of the Data Connect no-cost trial ${freeTrialTermsLink()}` +
-          `\nMonitor the progress at ${cloudSqlAdminClient.instanceConsoleLink(projectId, instanceId)}`,
+        `CloudSQL instance '${instanceId}' not found.` + cta + freeTrialUsed
+          ? ""
+          : `\nThis instance is provided under the terms of the Data Connect no-cost trial ${freeTrialTermsLink()}` +
+              dryRun
+            ? `\nMonitor the progress at ${cloudSqlAdminClient.instanceConsoleLink(projectId, instanceId)}`
+            : "",
       );
+
     if (!dryRun) {
       const newInstance = await promiseWithSpinner(
         () =>
-          cloudSqlAdminClient.createInstance(
+          cloudSqlAdminClient.createInstance({
             projectId,
-            locationId,
+            location,
             instanceId,
             enableGoogleMlIntegration,
             waitForCreation,
-          ),
+            freeTrial: !freeTrialUsed,
+          }),
         "Creating your instance...",
       );
       if (newInstance) {
@@ -177,4 +170,12 @@ export function getUpdateReason(instance: Instance, requireGoogleMlIntegration: 
   }
 
   return reason;
+}
+
+function cmekWarning() {
+  const message =
+    "Cloud SQL instances created via the Firebase CLI do not support customer managed encryption keys.\n" +
+    "If you'd like to use a CMEK to encrypt your data, first create a CMEK encrypted instance (https://cloud.google.com/sql/docs/postgres/configure-cmek#createcmekinstance).\n" +
+    "Then, edit your `dataconnect.yaml` file to use the encrypted instance and redeploy.";
+  utils.logLabeledWarning("dataconnect", message);
 }

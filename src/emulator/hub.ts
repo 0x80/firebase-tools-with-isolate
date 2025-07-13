@@ -13,6 +13,7 @@ import { ExpressBasedEmulator } from "./ExpressBasedEmulator";
 import { PortName } from "./portUtils";
 import { DataConnectEmulator } from "./dataconnectEmulator";
 import { isVSCodeExtension } from "../vsCodeUtils";
+import { maybeUsePortForwarding } from "./env";
 
 // We use the CLI version from package.json
 const pkg = require("../../package.json");
@@ -29,7 +30,7 @@ export interface EmulatorHubArgs {
   listenForEmulator: Record<PortName, ListenSpec[]>;
 }
 
-export type GetEmulatorsResponse = Record<string, EmulatorInfo>;
+export type GetEmulatorsResponse = Partial<Record<Emulators, EmulatorInfo>>;
 
 export class EmulatorHub extends ExpressBasedEmulator {
   static CLI_VERSION = pkg.version;
@@ -54,7 +55,7 @@ export class EmulatorHub extends ExpressBasedEmulator {
     const locator = JSON.parse(data) as Locator;
 
     // TODO: In case the locator file format is changed, handle issues with format incompatability
-    if (!isVSCodeExtension && locator.version !== this.CLI_VERSION) {
+    if (!isVSCodeExtension() && locator.version !== this.CLI_VERSION) {
       logger.debug(`Found locator with mismatched version, ignoring: ${JSON.stringify(locator)}`);
       return undefined;
     }
@@ -79,13 +80,13 @@ export class EmulatorHub extends ExpressBasedEmulator {
     await this.writeLocatorFile();
   }
 
-  getRunningEmulatorsMapping(): any {
+  getRunningEmulatorsMapping(): GetEmulatorsResponse {
     const emulators: GetEmulatorsResponse = {};
     for (const info of EmulatorRegistry.listRunningWithInfo()) {
-      emulators[info.name] = {
+      emulators[info.name] = maybeUsePortForwarding({
         listen: this.args.listenForEmulator[info.name],
         ...info,
-      };
+      });
     }
     return emulators;
   }
@@ -181,7 +182,7 @@ export class EmulatorHub extends ExpressBasedEmulator {
       }
 
       await instance.clearData();
-      res.status(200).send("Data cleared");
+      res.status(200).json({ success: true });
     });
 
     return app;

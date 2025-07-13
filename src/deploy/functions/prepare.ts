@@ -1,5 +1,4 @@
 import * as clc from "colorette";
-
 import { DeployOptions } from "..";
 import {
   artifactRegistryDomain,
@@ -8,6 +7,7 @@ import {
   functionsOrigin,
   pubsubOrigin,
   runtimeconfigOrigin,
+  secretManagerOrigin,
   storageOrigin,
 } from "../../api";
 import * as ensureApiEnabled from "../../ensureApiEnabled";
@@ -25,6 +25,7 @@ import { generateServiceIdentity } from "../../gcp/serviceusage";
 import { logger } from "../../logger";
 import { Options } from "../../options";
 import { needProjectId, needProjectNumber } from "../../projectUtils";
+import * as prompt from "../../prompt";
 import { logLabeledBullet } from "../../utils";
 import { Context as ExtContext, Payload as ExtPayload } from "../extensions/args";
 import { prepareDynamicExtensions } from "../extensions/prepare";
@@ -33,7 +34,7 @@ import * as backend from "./backend";
 import { allEndpoints, Backend } from "./backend";
 import * as build from "./build";
 import { applyBackendHashToBackends } from "./cache/applyHash";
-import { ensureServiceAgentRoles } from "./checkIam";
+import { ensureGenkitMonitoringRoles, ensureServiceAgentRoles } from "./checkIam";
 import * as ensure from "./ensure";
 import {
   EndpointFilter,
@@ -149,7 +150,7 @@ export async function prepare(
     }
 
     for (const endpoint of backend.allEndpoints(wantBackend)) {
-      endpoint.environmentVariables = { ...wantBackend.environmentVariables } || {};
+      endpoint.environmentVariables = { ...wantBackend.environmentVariables };
       let resource: string;
       if (endpoint.platform === "gcfv1") {
         resource = `projects/${endpoint.project}/locations/${endpoint.region}/functions/${endpoint.id}`;
@@ -245,31 +246,8 @@ export async function prepare(
   const wantBackend = backend.merge(...Object.values(wantBackends));
   const haveBackend = backend.merge(...Object.values(haveBackends));
 
-  // Enable required APIs. This may come implicitly from triggers (e.g. scheduled triggers
-  // require cloudscheudler and, in v1, require pub/sub), or can eventually come from
-  // explicit dependencies.
-  await Promise.all(
-    Object.values(wantBackend.requiredAPIs).map(({ api }) => {
-      return ensureApiEnabled.ensure(projectId, api, "functions", /* silent=*/ false);
-    }),
-  );
-  if (backend.someEndpoint(wantBackend, (e) => e.platform === "gcfv2")) {
-    // Note: Some of these are premium APIs that require billing to be enabled.
-    // We'd eventually have to add special error handling for billing APIs, but
-    // enableCloudBuild is called above and has this special casing already.
-    const V2_APIS = [cloudRunApiOrigin(), eventarcOrigin(), pubsubOrigin(), storageOrigin()];
-    const enablements = V2_APIS.map((api) => {
-      return ensureApiEnabled.ensure(context.projectId, api, "functions");
-    });
-    await Promise.all(enablements);
-    // Need to manually kick off the p4sa activation of services
-    // that we use with IAM roles assignment.
-    const services = ["pubsub.googleapis.com", "eventarc.googleapis.com"];
-    const generateServiceAccounts = services.map((service) => {
-      return generateServiceIdentity(projectNumber, service, "functions");
-    });
-    await Promise.all(generateServiceAccounts);
-  }
+  await ensureAllRequiredAPIsEnabled(projectNumber, wantBackend);
+  await warnIfNewGenkitFunctionIsMissingSecrets(wantBackend, haveBackend, options);
 
   // ===Phase 6. Ask for user prompts for things might warrant user attentions.
   // We limit the scope endpoints being deployed.
@@ -284,6 +262,13 @@ export async function prepare(
   await backend.checkAvailability(context, matchingBackend);
   await validate.secretsAreValid(projectId, matchingBackend);
   await ensureServiceAgentRoles(
+    projectId,
+    projectNumber,
+    matchingBackend,
+    haveBackend,
+    options.dryRun,
+  );
+  await ensureGenkitMonitoringRoles(
     projectId,
     projectNumber,
     matchingBackend,
@@ -499,4 +484,84 @@ export async function loadCodebases(
     wantBuilds[codebase].runtime = codebaseConfig.runtime;
   }
   return wantBuilds;
+}
+
+// Genkit almost always requires an API key, so warn if the customer is about to deploy
+// a function and doesn't have one. To avoid repetitive nagging, only warn on the first
+// deploy of the function.
+export async function warnIfNewGenkitFunctionIsMissingSecrets(
+  have: backend.Backend,
+  want: backend.Backend,
+  options: DeployOptions,
+) {
+  if (options.force) {
+    return;
+  }
+
+  const newAndMissingSecrets = backend.allEndpoints(
+    backend.matchingBackend(want, (e) => {
+      if (!backend.isCallableTriggered(e) || !e.callableTrigger.genkitAction) {
+        return false;
+      }
+      if (e.secretEnvironmentVariables?.length) {
+        return false;
+      }
+      return !backend.hasEndpoint(have)(e);
+    }),
+  );
+
+  if (newAndMissingSecrets.length) {
+    const message =
+      `The function(s) ${newAndMissingSecrets.map((e) => e.id).join(", ")} use Genkit but do not have access to a secret. ` +
+      "This may cause the function to fail if it depends on an API key. To learn more about granting a function access to " +
+      "secrets, see https://firebase.google.com/docs/functions/config-env?gen=2nd#secret_parameters. Continue?";
+    if (!(await prompt.confirm({ message, nonInteractive: options.nonInteractive }))) {
+      throw new FirebaseError("Aborted");
+    }
+  }
+}
+
+// Enable required APIs. This may come implicitly from triggers (e.g. scheduled triggers
+// require cloudscheduler and, in v1, require pub/sub), use of features (secrets), or explicit dependencies.
+export async function ensureAllRequiredAPIsEnabled(
+  projectNumber: string,
+  wantBackend: backend.Backend,
+): Promise<void> {
+  await Promise.all(
+    Object.values(wantBackend.requiredAPIs).map(({ api }) => {
+      return ensureApiEnabled.ensure(projectNumber, api, "functions", /* silent=*/ false);
+    }),
+  );
+  if (backend.someEndpoint(wantBackend, (e) => e.platform === "gcfv2")) {
+    // Note: Some of these are premium APIs that require billing to be enabled.
+    // We'd eventually have to add special error handling for billing APIs, but
+    // enableCloudBuild is called above and has this special casing already.
+    const V2_APIS = [cloudRunApiOrigin(), eventarcOrigin(), pubsubOrigin(), storageOrigin()];
+    const enablements = V2_APIS.map((api) => {
+      return ensureApiEnabled.ensure(projectNumber, api, "functions");
+    });
+    await Promise.all(enablements);
+    // Need to manually kick off the p4sa activation of services
+    // that we use with IAM roles assignment.
+    const services = ["pubsub.googleapis.com", "eventarc.googleapis.com"];
+    const generateServiceAccounts = services.map((service) => {
+      return generateServiceIdentity(projectNumber, service, "functions");
+    });
+    await Promise.all(generateServiceAccounts);
+  }
+
+  // If function is making use of secrets, go ahead and enable Secret Manager API.
+  if (
+    backend.someEndpoint(
+      wantBackend,
+      (e) => !!(e.secretEnvironmentVariables && e.secretEnvironmentVariables.length > 0),
+    )
+  ) {
+    await ensureApiEnabled.ensure(
+      projectNumber,
+      secretManagerOrigin(),
+      "functions",
+      /* silent=*/ false,
+    );
+  }
 }

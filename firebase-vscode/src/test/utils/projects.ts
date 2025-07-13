@@ -1,6 +1,12 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
+export const schemaPath = path.resolve(
+  process.cwd(),
+  "src/test/test_projects/fishfood/dataconnect/schema/schema.gql",
+);
+
+
 export const mutationsPath = path.resolve(
   process.cwd(),
   "src/test/test_projects/fishfood/dataconnect/connectors/a/mutations.gql",
@@ -9,6 +15,11 @@ export const mutationsPath = path.resolve(
 export const queriesPath = path.resolve(
   process.cwd(),
   "src/test/test_projects/fishfood/dataconnect/connectors/a/queries.gql",
+);
+
+export const queryWithFragmentPath = path.resolve(
+  process.cwd(),
+  "src/test/test_projects/fishfood/dataconnect/connectors/a/queryWithFragment.gql",
 );
 
 export const firebaseRcPath = path.resolve(

@@ -7,7 +7,7 @@ import { Command } from "../command";
 import { FirebaseError } from "../error";
 import { testIamPermissions } from "../gcp/iam";
 import { logger } from "../logger";
-import { promptOnce } from "../prompt";
+import { input, confirm } from "../prompt";
 import { requirePermissions } from "../requirePermissions";
 import { logBullet, logWarning } from "../utils";
 import { zip } from "../functional";
@@ -58,14 +58,12 @@ async function checkRequiredPermission(pInfos: configExport.ProjectConfigInfo[])
         `${clc.bold(pInfo.projectId)}:\n\t${result.missing.join("\n\t")}`,
     );
 
-    const confirm = await promptOnce({
-      type: "confirm",
-      name: "skip",
-      default: true,
+    const confirmed = await confirm({
       message: `Continue without importing configs from project ${pInfo.projectId}?`,
+      default: true,
     });
 
-    if (!confirm) {
+    if (!confirmed) {
       throw new FirebaseError("Command aborted!");
     }
   }
@@ -74,15 +72,10 @@ async function checkRequiredPermission(pInfos: configExport.ProjectConfigInfo[])
 async function promptForPrefix(errMsg: string): Promise<string> {
   logWarning("The following configs keys could not be exported as environment variables:\n");
   logWarning(errMsg);
-  return await promptOnce(
-    {
-      type: "input",
-      name: "prefix",
-      default: "CONFIG_",
-      message: "Enter a PREFIX to rename invalid environment variable keys:",
-    },
-    {},
-  );
+  return await input({
+    default: "CONFIG_",
+    message: "Enter a PREFIX to rename invalid environment variable keys:",
+  });
 }
 
 function fromEntries<V>(itr: Iterable<[string, V]>): Record<string, V> {
@@ -94,7 +87,7 @@ function fromEntries<V>(itr: Iterable<[string, V]>): Record<string, V> {
 }
 
 export const command = new Command("functions:config:export")
-  .description("Export environment config as environment variables in dotenv format")
+  .description("export environment config as environment variables in dotenv format")
   .before(requirePermissions, [
     "runtimeconfig.configs.list",
     "runtimeconfig.configs.get",
