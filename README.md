@@ -56,14 +56,14 @@ If you have a monorepo, your firebase.json file should be located in the root li
   "functions": [
     {
       "source": "services/api",
-      "predeploy": ["turbo build --filter=@repo/api"],
+      "predeploy": ["pnpm build:api"],
       "runtime": "nodejs22",
       "codebase": "api",
       "isolate": true
     },
     {
-      "source": "services/functions",
-      "predeploy": ["turbo build --filter=@repo/functions"],
+      "source": "services/fns",
+      "predeploy": ["pnpm build:fns"],
       "runtime": "nodejs22",
       "codebase": "fns",
       "isolate": true
@@ -95,6 +95,8 @@ If you have a monorepo, your firebase.json file should be located in the root li
   }
 }
 ```
+
+At the time of writing, firebase-tools has an seemingly odd limitation that prevents it from running predeploy commands with "=" in them. So `"turbo build --filter=@repo/api"` doesn't work. A workaround is to use `"pnpm build:api"` instead, and put `"build:api": "turbo build --filter=@repo/api"` in your root package.json.
 
 If you would like to see a complete working example of a modern monorepo setup check out [mono-ts](https://github.com/0x80/mono-ts)
 
