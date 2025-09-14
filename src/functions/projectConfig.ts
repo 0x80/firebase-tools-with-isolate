@@ -1,4 +1,9 @@
-import { FunctionsConfig, FunctionConfig } from "../firebaseConfig";
+import {
+  FunctionsConfig,
+  FunctionConfig,
+  LocalFunctionConfig,
+  RemoteFunctionConfig,
+} from "../firebaseConfig";
 import { FirebaseError } from "../error";
 import type { ActiveRuntime } from "../deploy/functions/runtimes/supported/types";
 
