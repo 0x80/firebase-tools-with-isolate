@@ -143,6 +143,8 @@ export const cloudRunApiOrigin = () =>
   utils.envOverride("CLOUD_RUN_API_URL", "https://run.googleapis.com");
 export const serviceUsageOrigin = () =>
   utils.envOverride("FIREBASE_SERVICE_USAGE_URL", "https://serviceusage.googleapis.com");
+export const studioApiOrigin = () =>
+  utils.envOverride("FIREBASE_STUDIO_URL", "https://monospace-pa.googleapis.com");
 
 export const githubOrigin = () => utils.envOverride("GITHUB_URL", "https://github.com");
 export const githubApiOrigin = () => utils.envOverride("GITHUB_API_URL", "https://api.github.com");
@@ -169,6 +171,9 @@ export const vertexAIOrigin = () =>
   utils.envOverride("VERTEX_AI_URL", "https://aiplatform.googleapis.com");
 export const cloudAiCompanionOrigin = () =>
   utils.envOverride("CLOUD_AI_COMPANION_URL", "https://cloudaicompanion.googleapis.com");
+
+export const appTestingOrigin = () =>
+  utils.envOverride("FIREBASE_APP_TESTING_URL", "https://firebaseapptesting.googleapis.com");
 
 /** Gets scopes that have been set. */
 export function getScopes(): string[] {

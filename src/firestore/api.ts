@@ -5,6 +5,7 @@ import * as utils from "../utils";
 import * as validator from "./validator";
 
 import * as types from "./api-types";
+import { DatabaseEdition, Density } from "./api-types";
 import * as Spec from "./api-spec";
 import * as sort from "./api-sort";
 import * as util from "./util";
@@ -13,10 +14,36 @@ import { firestoreOrigin } from "../api";
 import { FirebaseError } from "../error";
 import { Client } from "../apiv2";
 import { PrettyPrint } from "./pretty-print";
+import { optionalValueMatches } from "../functional";
 
 export class FirestoreApi {
   apiClient = new Client({ urlPrefix: firestoreOrigin(), apiVersion: "v1" });
   printer = new PrettyPrint();
+
+  /**
+   * Process indexes by filtering out implicit __name__ fields with ASCENDING order.
+   * Keeps explicit __name__ fields with DESCENDING order.
+   * @param indexes Array of indexes to process
+   * @return Processed array of indexes with filtered fields
+   */
+  public static processIndexes(indexes: types.Index[]): types.Index[] {
+    return indexes.map((index: types.Index): types.Index => {
+      // Per https://firebase.google.com/docs/firestore/query-data/index-overview#default_ordering_and_the_name_field
+      // this matches the direction of the last non-name field in the index.
+      let fields = index.fields;
+      const lastField = index.fields?.[index.fields.length - 1];
+      if (lastField?.fieldPath === "__name__") {
+        const defaultDirection = index.fields?.[index.fields.length - 2]?.order;
+        if (lastField?.order === defaultDirection) {
+          fields = fields.slice(0, -1);
+        }
+      }
+      return {
+        ...index,
+        fields,
+      };
+    });
+  }
 
   /**
    * Deploy an index specification to the specified project.
@@ -49,8 +76,10 @@ export class FirestoreApi {
       databaseId,
     );
 
+    const database = await this.getDatabase(options.project, databaseId);
+    const edition = database.databaseEdition ?? DatabaseEdition.STANDARD;
     const indexesToDelete = existingIndexes.filter((index) => {
-      return !indexesToDeploy.some((spec) => this.indexMatchesSpec(index, spec));
+      return !indexesToDeploy.some((spec) => this.indexMatchesSpec(index, spec, edition));
     });
 
     // We only want to delete fields where there is nothing in the local file with the same
@@ -102,7 +131,7 @@ export class FirestoreApi {
     }
 
     for (const index of indexesToDeploy) {
-      const exists = existingIndexes.some((x) => this.indexMatchesSpec(x, index));
+      const exists = existingIndexes.some((x) => this.indexMatchesSpec(x, index, edition));
       if (exists) {
         logger.debug(`Skipping existing index: ${JSON.stringify(index)}`);
       } else {
@@ -183,20 +212,7 @@ export class FirestoreApi {
       return [];
     }
 
-    return indexes.map((index: any): types.Index => {
-      // Ignore any fields that point at the document ID, as those are implied
-      // in all indexes.
-      const fields = index.fields.filter((field: types.IndexField) => {
-        return field.fieldPath !== "__name__";
-      });
-
-      return {
-        name: index.name,
-        state: index.state,
-        queryScope: index.queryScope,
-        fields,
-      };
-    });
+    return FirestoreApi.processIndexes(indexes);
   }
 
   /**
@@ -232,6 +248,10 @@ export class FirestoreApi {
         collectionGroup: util.parseIndexName(index.name).collectionGroupId,
         queryScope: index.queryScope,
         fields: index.fields,
+        apiScope: index.apiScope,
+        density: index.density,
+        multikey: index.multikey,
+        unique: index.unique,
       };
     });
 
@@ -254,6 +274,10 @@ export class FirestoreApi {
             order: firstField.order,
             arrayConfig: firstField.arrayConfig,
             queryScope: index.queryScope,
+            apiScope: index.apiScope,
+            density: index.density,
+            multikey: index.multikey,
+            unique: index.unique,
           };
         }),
       };
@@ -292,6 +316,25 @@ export class FirestoreApi {
     validator.assertHas(index, "collectionGroup");
     validator.assertHas(index, "queryScope");
     validator.assertEnum(index, "queryScope", Object.keys(types.QueryScope));
+
+    if (index.apiScope) {
+      validator.assertEnum(index, "apiScope", Object.keys(types.ApiScope));
+    }
+
+    if (index.density) {
+      validator.assertEnum(index, "density", Object.keys(types.Density));
+    }
+
+    if (index.multikey) {
+      validator.assertType("multikey", index.multikey, "boolean");
+    }
+
+    if (index.unique !== undefined) {
+      validator.assertType("unique", index.unique, "boolean");
+      // TODO(b/439901837): Remove this check and update indexMatchesSpec once
+      //  unique index configuration is supported.
+      throw new FirebaseError("The `unique` index configuration is not supported yet.");
+    }
 
     validator.assertHas(index, "fields");
 
@@ -341,6 +384,22 @@ export class FirestoreApi {
       if (index.queryScope) {
         validator.assertEnum(index, "queryScope", Object.keys(types.QueryScope));
       }
+
+      if (index.apiScope) {
+        validator.assertEnum(index, "apiScope", Object.keys(types.ApiScope));
+      }
+
+      if (index.density) {
+        validator.assertEnum(index, "density", Object.keys(types.Density));
+      }
+
+      if (index.multikey) {
+        validator.assertType("multikey", index.multikey, "boolean");
+      }
+
+      if (index.unique) {
+        validator.assertType("unique", index.unique, "boolean");
+      }
     });
   }
 
@@ -361,6 +420,10 @@ export class FirestoreApi {
     const indexes = spec.indexes.map((index) => {
       return {
         queryScope: index.queryScope,
+        apiScope: index.apiScope,
+        density: index.density,
+        multikey: index.multikey,
+        unique: index.unique,
         fields: [
           {
             fieldPath: spec.fieldPath,
@@ -408,6 +471,10 @@ export class FirestoreApi {
     return this.apiClient.post(url, {
       fields: index.fields,
       queryScope: index.queryScope,
+      apiScope: index.apiScope,
+      density: index.density,
+      multikey: index.multikey,
+      unique: index.unique,
     });
   }
 
@@ -420,9 +487,50 @@ export class FirestoreApi {
   }
 
   /**
+   * Returns true if the given ApiScope values match.
+   * If either one is undefined, the default value is used for comparison.
+   * @param lhs the first ApiScope value.
+   * @param rhs the second ApiScope value.
+   */
+  optionalApiScopeMatches(
+    lhs: types.ApiScope | undefined,
+    rhs: types.ApiScope | undefined,
+  ): boolean {
+    return optionalValueMatches<types.ApiScope>(lhs, rhs, types.ApiScope.ANY_API);
+  }
+
+  /**
+   * Returns true if the given Density values match.
+   * If either one is undefined, the default value is used for comparison based on Database Edition.
+   * @param lhs the first Density value.
+   * @param rhs the second Density value.
+   * @param edition the database edition used to determine the default value.
+   */
+  optionalDensityMatches(
+    lhs: Density | undefined,
+    rhs: Density | undefined,
+    edition: types.DatabaseEdition,
+  ): boolean {
+    const defaultValue =
+      edition === DatabaseEdition.STANDARD ? types.Density.SPARSE_ALL : types.Density.DENSE;
+    return optionalValueMatches<types.Density>(lhs, rhs, defaultValue);
+  }
+
+  /**
+   * Returns true if the given Multikey values match.
+   * If either one is undefined, the default value is used for comparison.
+   * @param lhs the first Multikey value.
+   * @param rhs the second Multikey value.
+   */
+  optionalMultikeyMatches(lhs: boolean | undefined, rhs: boolean | undefined): boolean {
+    const defaultValue = false;
+    return optionalValueMatches<boolean>(lhs, rhs, defaultValue);
+  }
+
+  /**
    * Determine if an API Index and a Spec Index are functionally equivalent.
    */
-  indexMatchesSpec(index: types.Index, spec: Spec.Index): boolean {
+  indexMatchesSpec(index: types.Index, spec: Spec.Index, edition: types.DatabaseEdition): boolean {
     const collection = util.parseIndexName(index.name).collectionGroupId;
     if (collection !== spec.collectionGroup) {
       return false;
@@ -431,6 +539,25 @@ export class FirestoreApi {
     if (index.queryScope !== spec.queryScope) {
       return false;
     }
+
+    // apiScope is an optional value and may be missing in firestore.indexes.json,
+    // and may also be missing from the server value (when default is picked).
+    if (!this.optionalApiScopeMatches(index.apiScope, spec.apiScope)) {
+      return false;
+    }
+
+    // density is an optional value and may be missing in firestore.indexes.json,
+    // and may also be missing from the server value (when default is picked).
+    if (!this.optionalDensityMatches(index.density, spec.density, edition)) {
+      return false;
+    }
+    // multikey is an optional value and may be missing in firestore.indexes.json,
+    // and may also be missing from the server value (when default is picked).
+    if (!this.optionalMultikeyMatches(index.multikey, spec.multikey)) {
+      return false;
+    }
+
+    // TODO(b/439901837): Compare `unique` index configuration when it's supported.
 
     if (index.fields.length !== spec.fields.length) {
       return false;
@@ -450,6 +577,11 @@ export class FirestoreApi {
       }
 
       if (iField.arrayConfig !== sField.arrayConfig) {
+        return false;
+      }
+
+      // Note: vectorConfig is an object, and using '!==' should not be used.
+      if (!utils.deepEqual(iField.vectorConfig, sField.vectorConfig)) {
         return false;
       }
 
@@ -537,11 +669,23 @@ export class FirestoreApi {
     }
 
     result.indexes = spec.indexes.map((index: any) => {
-      const i = {
+      const i: any = {
         collectionGroup: index.collectionGroup || index.collectionId,
         queryScope: index.queryScope || types.QueryScope.COLLECTION,
-        fields: [],
       };
+
+      if (index.apiScope) {
+        i.apiScope = index.apiScope;
+      }
+      if (index.density) {
+        i.density = index.density;
+      }
+      if (index.multikey !== undefined) {
+        i.multikey = index.multikey;
+      }
+      if (index.unique !== undefined) {
+        i.unique = index.unique;
+      }
 
       if (index.fields) {
         i.fields = index.fields.map((field: any) => {
@@ -626,6 +770,7 @@ export class FirestoreApi {
     const payload: types.DatabaseReq = {
       locationId: req.locationId,
       type: req.type,
+      databaseEdition: req.databaseEdition,
       deleteProtectionState: req.deleteProtectionState,
       pointInTimeRecoveryEnablement: req.pointInTimeRecoveryEnablement,
       cmekConfig: req.cmekConfig,
@@ -691,6 +836,32 @@ export class FirestoreApi {
   }
 
   /**
+   * Bulk delete documents from a Firestore database.
+   * @param project the Firebase project id.
+   * @param databaseId the id of the Firestore Database.
+   * @param collectionIds the collection IDs to delete.
+   */
+  async bulkDeleteDocuments(
+    project: string,
+    databaseId: string,
+    collectionIds: string[],
+  ): Promise<types.BulkDeleteDocumentsResponse> {
+    const name = `/projects/${project}/databases/${databaseId}`;
+    const url = `${name}:bulkDeleteDocuments`;
+    const payload: types.BulkDeleteDocumentsRequest = {
+      name,
+      collectionIds,
+    };
+    const res = await this.apiClient.post<
+      types.BulkDeleteDocumentsRequest,
+      types.BulkDeleteDocumentsResponse
+    >(url, payload);
+    return {
+      name: res.body?.name,
+    };
+  }
+
+  /**
    * Restore a Firestore Database from a backup.
    * @param project the Firebase project id.
    * @param databaseId the ID of the Firestore Database to be restored into
@@ -720,5 +891,73 @@ export class FirestoreApi {
     }
 
     return database;
+  }
+
+  /**
+   * List the long-running Firestore operations.
+   * @param project the Firebase project id.
+   * @param databaseId the id of the Firestore Database.
+   * @param limit The maximum number of operations to list.
+   */
+  async listOperations(
+    project: string,
+    databaseId: string,
+    limit: number,
+  ): Promise<types.ListOperationsResponse> {
+    const url = `/projects/${project}/databases/${databaseId}/operations`;
+    const res = await this.apiClient.get<types.ListOperationsResponse>(url, {
+      queryParams: {
+        pageSize: limit,
+      },
+    });
+    return res.body;
+  }
+
+  /**
+   * Retrieves the information related to the LRO with the given name.
+   * @param project the Firebase project id.
+   * @param databaseId the id of the Firestore Database.
+   * @param operationName the name of the LRO.
+   */
+  async describeOperation(
+    project: string,
+    databaseId: string,
+    operationName: string,
+  ): Promise<types.Operation> {
+    const url = `/projects/${project}/databases/${databaseId}/operations/${operationName}`;
+    const res = await this.apiClient.get<types.Operation>(url);
+    return res.body;
+  }
+
+  /**
+   * Cancels the LRO with the given name.
+   * @param project the Firebase project id.
+   * @param databaseId the id of the Firestore Database.
+   * @param operationName the name of the LRO.
+   */
+  async cancelOperation(
+    project: string,
+    databaseId: string,
+    operationName: string,
+  ): Promise<{ success: boolean }> {
+    const url = `/projects/${project}/databases/${databaseId}/operations/${operationName}:cancel`;
+    try {
+      const res = await this.apiClient.post<void, void>(url);
+      return { success: res.status === 200 };
+    } catch (error) {
+      // For the cases when the user is trying to cancel an operation that has
+      // already completed, the response is not very useful. The error message is
+      // "Precondition check failed.". And one has to parse the details of the error
+      // stack to find out the real reason. We try to improve the error message here.
+      const reason = "Cannot cancel an operation that is completed.";
+      const details = (error as any).context?.body?.error?.details || [];
+      for (const detail of details) {
+        if (detail.detail?.includes(reason)) {
+          throw new FirebaseError(reason);
+        }
+      }
+      // If we weren't able to provide a better reason, rethrow the original error.
+      throw error;
+    }
   }
 }

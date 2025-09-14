@@ -1,4 +1,5 @@
 import * as clc from "colorette";
+import * as path from "node:path";
 import { CommanderStatic } from "commander";
 import { first, last, size, head, keys, values } from "lodash";
 
@@ -11,9 +12,11 @@ import { detectProjectRoot } from "./detectProjectRoot";
 import { trackEmulator, trackGA4 } from "./track";
 import { selectAccount, setActiveAccount } from "./auth";
 import { getProject } from "./management/projects";
+import { reconcileStudioFirebaseProject } from "./management/studio";
 import { requireAuth } from "./requireAuth";
 import { Options } from "./options";
 import { useConsoleLoggers } from "./logger";
+import { isFirebaseStudio } from "./env";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ActionFunction = (...args: any[]) => any;
@@ -338,7 +341,7 @@ export class Command {
       setActiveAccount(options, activeAccount);
     }
 
-    this.applyRC(options);
+    await this.applyRC(options);
     if (options.project) {
       await this.resolveProjectIdentifiers(options);
       validateProjectId(options.projectId);
@@ -350,12 +353,20 @@ export class Command {
    * @param options the command options object.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private applyRC(options: Options): void {
+  private async applyRC(options: Options) {
     const rc = loadRC(options);
     options.rc = rc;
-    const activeProject = options.projectRoot
-      ? (configstore.get("activeProjects") ?? {})[options.projectRoot]
-      : undefined;
+    let activeProject = this.configstoreProject(options.projectRoot || process.cwd());
+
+    // Only fetch the Studio Workspace project if we're running in Firebase
+    // Studio. If the user passes the project via --project, it should take
+    // priority.
+    // If this is the firebase use command, don't worry about reconciling - the user is changing it anyway
+    const isUseCommand = process.argv.includes("use");
+    if (isFirebaseStudio() && !options.project && !isUseCommand) {
+      activeProject = await reconcileStudioFirebaseProject(options, activeProject);
+    }
+
     options.project = options.project ?? activeProject;
     // support deprecated "firebase" key in firebase.json
     if (options.config && !options.project) {
@@ -377,6 +388,21 @@ export class Command {
       // If there's an alias named 'default', default to that.
       options.projectAlias = "default";
       options.project = aliases["default"];
+    }
+  }
+
+  private configstoreProject(dir: string) {
+    const projectMap = configstore.get("activeProjects") ?? {};
+    let currentDir = path.resolve(dir);
+    while (true) {
+      if (projectMap[currentDir]) {
+        return projectMap[currentDir];
+      }
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) {
+        return null;
+      }
+      currentDir = parentDir;
     }
   }
 

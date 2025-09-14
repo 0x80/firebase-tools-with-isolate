@@ -1,5 +1,9 @@
-- Updated Data Connect emulator to v2.9.1, which:
-  - Replaces the release of v2.9.0, which used an outdated version of Data Connect emulator.
-  - Fixed an issue in Data Connect where indexes over 63 characters broke schema migration.
-  - Added support for `string_pattern` filters in Data Connect. These allow you to filter string fields using regex or `LIKE` semantics.
-- Fixed an issue where `firebase-tools` could not be used within v1 Cloud Functions due to trying to write to a read only file.
+- Added `firestore:bulkdelete` which initiates a Firestore managed bulk delete operation (#8974)
+- Added `firestore:operations:*` commands to list, describe, and cancel long-running operations (#8982)
+- `firebase emulator:start` use a default project `demo-no-project` if no project can be found. (#9072)
+- `firebase init dataconnect` also supports bootstrapping flutter template. (#9084)
+- Fixed a vulnerability in `unzip` util where files could be written outside of the expected output directory.
+- `firebase init dataconnect` confirms Cloud SQL provisioning. (#9095)
+- MCP `firebase_init` tool can download an existing FDC service returned from `dataconnect_list_services` (#9091)
+- Updated the Firebase Data Connect local toolkit to v2.13.0, which adds validation that checks that `_insert` data includes all non-null columns without defaults. (#9106)
+- Added `firebase_login` and `firebase_logout` MCP tools.

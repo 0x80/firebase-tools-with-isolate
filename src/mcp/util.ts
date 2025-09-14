@@ -1,7 +1,5 @@
-import { CallToolResult } from "@modelcontextprotocol/sdk/types";
-import { execSync } from "child_process";
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { dump } from "js-yaml";
-import { platform } from "os";
 import { ServerFeature } from "./types";
 import {
   apphostingOrigin,
@@ -12,8 +10,10 @@ import {
   remoteConfigApiOrigin,
   storageOrigin,
   crashlyticsApiOrigin,
+  realtimeOrigin,
 } from "../api";
 import { check } from "../ensureApiEnabled";
+import { timeoutFallback } from "../timeout";
 
 /**
  * Converts data to a CallToolResult.
@@ -58,29 +58,12 @@ export function mcpError(message: Error | string | unknown, code?: string): Call
   };
 }
 
-/**
- * Checks if a command exists in the system.
+/*
+ * Wraps a throwing function with a safe conversion to mcpError.
  */
-export function commandExistsSync(command: string): boolean {
-  try {
-    const isWindows = platform() === "win32";
-    // For Windows, `where` is more appropriate. It also often outputs the path.
-    // For Unix-like systems, `which` is standard.
-    // The `2> nul` (Windows) or `2>/dev/null` (Unix) redirects stderr to suppress error messages.
-    // The `>` nul / `>/dev/null` redirects stdout as we only care about the exit code.
-    const commandToCheck = isWindows
-      ? `where "${command}" > nul 2> nul`
-      : `which "${command}" > /dev/null 2> /dev/null`;
-
-    execSync(commandToCheck);
-    return true; // If execSync doesn't throw, the command was found (exit code 0)
-  } catch (error) {
-    // If the command is not found, execSync will throw an error (non-zero exit code)
-    return false;
-  }
-}
 
 const SERVER_FEATURE_APIS: Record<ServerFeature, string> = {
+  core: "",
   firestore: firestoreOrigin(),
   storage: storageOrigin(),
   dataconnect: dataconnectOrigin(),
@@ -89,6 +72,7 @@ const SERVER_FEATURE_APIS: Record<ServerFeature, string> = {
   remoteconfig: remoteConfigApiOrigin(),
   crashlytics: crashlyticsApiOrigin(),
   apphosting: apphostingOrigin(),
+  database: realtimeOrigin(),
 };
 
 /**
@@ -104,7 +88,12 @@ export async function checkFeatureActive(
   if (feature in (options?.config?.data || {})) return true;
   // if the feature's api is active in the project, it's active
   try {
-    if (projectId) return await check(projectId, SERVER_FEATURE_APIS[feature], "", true);
+    if (projectId)
+      return await timeoutFallback(
+        check(projectId, SERVER_FEATURE_APIS[feature], "", true),
+        true,
+        3000,
+      );
   } catch (e) {
     // if we don't have network or something, better to default to on
     return true;

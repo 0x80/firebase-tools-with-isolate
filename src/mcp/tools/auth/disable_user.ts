@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { tool } from "../../tool.js";
-import { toContent } from "../../util.js";
-import { disableUser } from "../../../gcp/auth.js";
+import { tool } from "../../tool";
+import { toContent } from "../../util";
+import { disableUser } from "../../../gcp/auth";
 
 export const disable_user = tool(
   {
@@ -24,7 +24,7 @@ export const disable_user = tool(
   async ({ uid, disabled }, { projectId }) => {
     const res = await disableUser(projectId, uid, disabled);
     if (res) {
-      return toContent(`User ${uid} as been ${disabled ? "disabled" : "enabled"}`);
+      return toContent(`User ${uid} has been ${disabled ? "disabled" : "enabled"}`);
     }
     return toContent(`Failed to ${disabled ? "disable" : "enable"} user ${uid}`);
   },

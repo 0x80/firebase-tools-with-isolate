@@ -1,5 +1,27 @@
 ## NEXT
 
+- [Changed] Gemini Code Assist is now optionally installed when using the "Build with AI" feature
+
+## 1.7.0
+
+- Update internal `firebase-tools` dependency to 14.15.2
+- Fixed the projectless developer experience. There are "error linter", "run (local)" buttons.
+
+## 1.6.1
+
+- Update internal `firebase-tools` dependency to 14.13.0
+
+## 1.6.0
+
+- Update internal `firebase-tools` dependency to 14.11.1
+- [Changed] Now integrates with GCA in its agentic mode, powered by the Gemini CLI. This brings the Firebase MCP Server directly into the VS Code environment, enabling developers to use natural language to generate application schemas and queries without manually invoking explicit tools.
+
+## 1.5.1
+
+- Update internal `firebase-tools` dependency to 14.11.0
+- [Fixed] Language server now properly recognizes nested Dataconnect folders
+- [Fixed] Add Data and Read Data now properly support enum and list types
+
 ## 1.5.0
 
 - Update internal `firebase-tools` dependency to 14.9.0
