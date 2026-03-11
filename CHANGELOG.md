@@ -1,2 +1,7 @@
-- Fix the bug when Data Connect emulator hangs with PGlite. (Issue #9756) #9771
-- Updated to v3.1.0 of the Data Connect emulator, which adds support for using `distinct: true` in combination with `orderBy`, and other internal improvements (#9778).
+- Added `firebase dataconnect:compile` command.
+- Loads experiments earlier in CLI startup so they can be used earlier. (#9797)
+- Fixed issue where `AuthBlockingEvent` had invalid format for `metadata.creationTime` and `metadata.lastSignInTime`. (#8109)
+- Fixed issue where Storage security rules is overwritten when running `firebase init storage`. (#8170)
+- Add support for firestoreDataAccessMode, mongodbCompatibleDataAccessMode, and
+  the realtimeUpdatesMode flags for Firestore Database creation (#9817)
+- Updated to v3.1.1 of the Data Connect emulator which includes fixes and internal improvements. (#9835)
