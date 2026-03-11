@@ -30,7 +30,7 @@ import {
   targetCodebases,
 } from "./functionsDeployHelper";
 import { logLabeledBullet } from "../../utils";
-import { getFunctionsConfig, prepareFunctionsUpload } from "./prepareFunctionsUpload";
+import { getFunctionsConfig, prepareFunctionsUpload, runIsolate } from "./prepareFunctionsUpload";
 import { promptForFailurePolicies, promptForMinInstances } from "./prompts";
 import { needProjectId, needProjectNumber } from "../../projectUtils";
 import { logger } from "../../logger";
@@ -214,13 +214,17 @@ export async function prepare(
     const cfg = configForCodebase(context.config, codebase);
     const localCfg = requireLocal(cfg, "Remote sources are not supported.");
     const sourceDirName = localCfg.source;
-    const sourceDir = options.config.path(sourceDirName);
+    let sourceDir = options.config.path(sourceDirName);
     const source: args.Source = {};
     if (backend.someEndpoint(wantBackend, () => true)) {
       logLabeledBullet(
         "functions",
         `preparing ${clc.bold(sourceDirName)} directory for uploading...`,
       );
+    }
+
+    if (localCfg.isolate === true) {
+      sourceDir = await runIsolate(sourceDirName);
     }
 
     if (backend.someEndpoint(wantBackend, (e) => e.platform === "gcfv2" || e.platform === "run")) {
