@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
 
-import type { IsolateExports } from "isolate-package";
+import type { isolate as isolateFn } from "isolate-package";
 import { dynamicImport } from "../../dynamicImport";
 import { FirebaseError } from "../../error";
 import * as fsAsync from "../../fsAsync";
@@ -183,10 +183,11 @@ export async function runIsolate(sourceDirName: string): Promise<string> {
      * A normal "await import()" gets transpiled to require() so we use the
      * dynamicImport function which seems to have been created to get around
      * that exact problem. Unfortunately, when using it we loose all type
-     * information so for this IsolateExports was created to be able to cast
-     * the result.
+     * information so we cast the result to get proper typing.
      */
-    const { isolate } = (await dynamicImport("isolate-package")) as IsolateExports;
+    const { isolate } = (await dynamicImport("isolate-package")) as {
+      isolate: typeof isolateFn;
+    };
 
     /**
      * Only set the targetPackagePath if the sourceDirName is not the current
