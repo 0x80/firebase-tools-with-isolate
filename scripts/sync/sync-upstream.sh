@@ -109,7 +109,9 @@ echo "   Target version: $TARGET_VERSION ($VERSION_NUMBER)"
 CURRENT_VERSION=$(node -p "require('./package.json').version")
 echo "   Current fork version: $CURRENT_VERSION"
 
-if [[ "$CURRENT_VERSION" == "${VERSION_NUMBER}-0" ]]; then
+# Match both "X.Y.Z-0" (pre-release) and "X.Y.Z" (after publishing to latest)
+CURRENT_BASE="${CURRENT_VERSION%%-*}"
+if [[ "$CURRENT_BASE" == "$VERSION_NUMBER" ]]; then
   echo ""
   echo "✅ Already synced to $TARGET_VERSION — nothing to do."
   exit 0

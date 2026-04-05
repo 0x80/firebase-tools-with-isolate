@@ -71,7 +71,14 @@ jobs:
 
       - name: Bump pre-release version
         id: version
+        env:
+          ISOLATE_VERSION: ${{ steps.isolate.outputs.version }}
         run: |
+          # Stage changes from npm pkg set + npm install so npm version
+          # doesn't fail on a dirty working directory
+          git add package.json npm-shrinkwrap.json
+          git commit -m "Update isolate-package to ${ISOLATE_VERSION}"
+
           npm version prerelease --git-tag-version true
 
           VERSION=$(node -e "process.stdout.write(require('./package.json').version)")

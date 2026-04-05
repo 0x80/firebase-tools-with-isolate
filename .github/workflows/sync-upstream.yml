@@ -69,7 +69,8 @@ jobs:
         run: |
           VERSION_NUMBER="${TARGET_TAG#v}"
           CURRENT=$(node -e "process.stdout.write(require('./package.json').version)")
-          if [[ "$CURRENT" == "${VERSION_NUMBER}-0" ]]; then
+          CURRENT_BASE="${CURRENT%%-*}"
+          if [[ "$CURRENT_BASE" == "$VERSION_NUMBER" ]]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Already synced to $TARGET_TAG"
           else
