@@ -1,0 +1,77 @@
+name: Publish to npm
+
+# Publishes the fork to npm using OIDC trusted publishing (provenance).
+# Requires Node.js 24+ and the id-token permission.
+#
+# SETUP: Configure npm trusted publishing for this GitHub repository at
+# https://www.npmjs.com/package/firebase-tools-with-isolate/access
+# Once configured, no NPM_TOKEN secret is needed.
+#
+# FALLBACK: If OIDC is not yet configured on npm, set a classic NPM_TOKEN
+# as a repository secret and uncomment the env block in the Publish step.
+#
+# Run this workflow manually after merging a sync PR.
+# Choose "next" to publish a pre-release, or "latest" for a stable release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: "npm dist-tag"
+        required: true
+        default: "next"
+        type: choice
+        options:
+          - next
+          - latest
+
+permissions:
+  contents: read
+  id-token: write # Required for npm OIDC trusted publishing / provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify package
+        env:
+          DIST_TAG: ${{ inputs.dist_tag }}
+        run: |
+          NAME=$(node -e "process.stdout.write(require('./package.json').name)")
+          VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
+          echo "Publishing: $NAME@$VERSION (tag: $DIST_TAG)"
+
+          if [[ "$NAME" != "firebase-tools-with-isolate" ]]; then
+            echo "❌ Package name is '$NAME', expected 'firebase-tools-with-isolate'."
+            echo "   The package.json may not have been patched correctly."
+            exit 1
+          fi
+
+          if [[ "$DIST_TAG" == "latest" && "$VERSION" == *"-"* ]]; then
+            echo "⚠️  Warning: Publishing a pre-release version ($VERSION) to 'latest'."
+            echo "   Consider removing the pre-release suffix first."
+          fi
+
+      - name: Publish
+        env:
+          DIST_TAG: ${{ inputs.dist_tag }}
+        run: npm publish --tag "$DIST_TAG" --provenance
+        # If using NPM_TOKEN instead of OIDC, uncomment the following:
+        # env:
+        #   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
