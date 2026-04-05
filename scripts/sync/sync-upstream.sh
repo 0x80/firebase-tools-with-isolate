@@ -238,6 +238,35 @@ for f in "${ISOLATE_SOURCE_FILES[@]}"; do
   fi
 done
 
+# Remove upstream workflow files that the fork doesn't maintain.
+# The GITHUB_TOKEN can't push branches that add/modify workflow files,
+# so we remove any that came in from the merge. The fork's own workflows
+# (sync-upstream, publish, update-isolate) are not affected since they
+# only exist in the fork.
+FORK_WORKFLOWS=(
+  "sync-upstream.yml"
+  "publish.yml"
+  "update-isolate.yml"
+)
+
+echo ""
+echo "🧹 Removing upstream workflow files…"
+for f in .github/workflows/*.yml .github/workflows/*.yaml; do
+  [[ -f "$f" ]] || continue
+  basename=$(basename "$f")
+  is_fork=false
+  for fw in "${FORK_WORKFLOWS[@]}"; do
+    if [[ "$basename" == "$fw" ]]; then
+      is_fork=true
+      break
+    fi
+  done
+  if [[ "$is_fork" == false ]]; then
+    echo "   Removing $f"
+    git rm -f "$f" 2>/dev/null || rm -f "$f"
+  fi
+done
+
 # ---------------------------------------------------------------------------
 # Step 6: Apply isolate-package changes
 # ---------------------------------------------------------------------------
