@@ -44,7 +44,19 @@ while [[ $# -gt 0 ]]; do
     --no-push)    PUSH=false; shift ;;
     --no-build)   BUILD=false; shift ;;
     --help|-h)
-      sed -n '3,/^# --/p' "$0" | head -n -1
+      cat <<HELP
+Usage:
+  ./scripts/sync/sync-upstream.sh [options]
+
+Options:
+  --target, -t VERSION    Upstream version to sync to (e.g. v15.13.0).
+                          Defaults to the latest upstream release tag.
+  --isolate-version, -i   isolate-package version (default: ^1.27.0-4)
+  --branch, -b NAME       Branch name to create. Defaults to auto-generated.
+  --no-push               Don't push the branch (for local testing).
+  --no-build              Skip the build verification step.
+  --help, -h              Show this help message.
+HELP
       exit 0
       ;;
     *) echo "Unknown option: $1"; exit 1 ;;
