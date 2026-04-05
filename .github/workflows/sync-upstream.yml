@@ -2,13 +2,14 @@ name: Sync Upstream
 
 # Checks for new upstream firebase-tools releases and creates a sync PR.
 #
-# Runs weekly on Monday mornings, or can be triggered manually with an
-# optional target version and isolate-package version override.
+# Runs daily, or can be triggered manually with an optional target version
+# and isolate-package version override. The already-synced check exits
+# immediately when there is no new release, so daily polling is cheap.
 
 on:
   schedule:
-    # Every Monday at 09:00 UTC
-    - cron: "0 9 * * 1"
+    # Every day at 09:00 UTC
+    - cron: "0 9 * * *"
   workflow_dispatch:
     inputs:
       target_version:
