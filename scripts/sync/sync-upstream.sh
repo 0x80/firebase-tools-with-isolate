@@ -219,6 +219,25 @@ fi
 
 echo "   Merge complete."
 
+# After the merge, reset isolate-patched source files to upstream's clean
+# version. The -X theirs merge strategy can produce mangled files when the
+# fork's import order differs from upstream. The apply script will re-add
+# the isolate changes cleanly on top.
+ISOLATE_SOURCE_FILES=(
+  "src/firebaseConfig.ts"
+  "src/deploy/functions/prepareFunctionsUpload.ts"
+  "src/deploy/functions/prepare.ts"
+)
+
+echo ""
+echo "🔄 Resetting isolate source files to upstream…"
+for f in "${ISOLATE_SOURCE_FILES[@]}"; do
+  if git show "${TARGET_VERSION}:${f}" &>/dev/null; then
+    git show "${TARGET_VERSION}:${f}" > "$f"
+    echo "   $f → upstream"
+  fi
+done
+
 # ---------------------------------------------------------------------------
 # Step 6: Apply isolate-package changes
 # ---------------------------------------------------------------------------
