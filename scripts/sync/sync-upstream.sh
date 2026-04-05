@@ -135,6 +135,8 @@ if git remote get-url origin &>/dev/null; then
   git pull origin master --quiet
 fi
 
+# Delete existing branch if it exists (safe — we just pulled fresh from master)
+git branch -D "$BRANCH_NAME" 2>/dev/null || true
 git checkout -b "$BRANCH_NAME"
 
 # ---------------------------------------------------------------------------
