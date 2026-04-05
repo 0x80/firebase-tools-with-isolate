@@ -79,6 +79,15 @@ jobs:
           git add package.json npm-shrinkwrap.json
           git commit -m "Update isolate-package to ${ISOLATE_VERSION}"
 
+          # If the version has no prerelease suffix (e.g. after publishing to
+          # "latest" which strips it), restore the "-0" suffix first. Without
+          # this, npm version prerelease would bump the patch number
+          # (15.13.0 → 15.13.1-0) instead of the prerelease (15.13.0 → 15.13.0-0).
+          CURRENT=$(node -e "process.stdout.write(require('./package.json').version)")
+          if [[ "$CURRENT" != *-* ]]; then
+            npm version "${CURRENT}-0" --git-tag-version true
+          fi
+
           npm version prerelease --git-tag-version true
 
           VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
