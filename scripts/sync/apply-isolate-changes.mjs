@@ -70,7 +70,9 @@ function assertAnchor(content, anchor, fileName) {
 function patchPackageJson() {
   const pkg = JSON.parse(readFile("package.json"));
 
-  const upstreamVersion = args.version || pkg.version;
+  // Strip any existing fork suffix (e.g. "15.3.1-0" → "15.3.1") so that
+  // running the script twice doesn't produce "15.3.1-0-0".
+  const upstreamVersion = (args.version || pkg.version).replace(/-0$/, "");
 
   pkg.name = "firebase-tools-with-isolate";
   pkg.description = "Command-Line Interface for Firebase with monorepo support";
