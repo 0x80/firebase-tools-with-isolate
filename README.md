@@ -70,13 +70,13 @@ For a complete working example of a modern monorepo setup, check out [mono-ts](h
 
 ## How this fork stays in sync
 
-Fork versions match upstream firebase-tools versions (e.g. `15.13.0-0` corresponds to upstream `v15.13.0`). The fork is kept in sync using automated tooling in `scripts/sync/`:
+Fork versions match upstream firebase-tools versions (e.g. `15.13.0-0` corresponds to upstream `v15.13.0`). The fork is kept in sync using automated tooling:
 
-- **`apply-isolate-changes.mjs`** — A script that applies the isolate integration on top of any clean upstream release. It patches exactly 4 source files and `package.json`, using anchor-based string matching that has been verified to be stable across upstream releases from v15.4.0 through v15.13.0.
+### Scripts (`scripts/sync/`)
+
+- **`apply-isolate-changes.mjs`** — Applies the isolate integration on top of any clean upstream release. Patches exactly 4 source files and `package.json`, using anchor-based string matching verified to be stable across upstream releases from v15.4.0 through v15.13.0.
 
 - **`sync-upstream.sh`** — Orchestrates the full sync: fetches upstream, merges a release tag, re-applies the isolate changes, installs dependencies, and verifies the build compiles.
-
-- **GitHub Actions** — A [sync workflow](.github/workflows/sync-upstream.yml) runs weekly and opens a PR when a new upstream release is detected. A separate [publish workflow](.github/workflows/publish.yml) handles npm releases with OIDC provenance.
 
 The sync can also be triggered manually:
 
@@ -90,6 +90,22 @@ The sync can also be triggered manually:
 # Dry run (no push)
 ./scripts/sync/sync-upstream.sh --no-push --no-build
 ```
+
+### GitHub Actions (`.github/workflows/`)
+
+All workflows use Node 24 and npm OIDC trusted publishing (provenance).
+
+- **[`sync-upstream.yml`](.github/workflows/sync-upstream.yml)** — Runs weekly (Monday 09:00 UTC) and on manual dispatch. Checks for new upstream firebase-tools releases and opens a PR with the synced result. Can target a specific version.
+
+- **[`update-isolate.yml`](.github/workflows/update-isolate.yml)** — Updates the `isolate-package` dependency to a given version, bumps the fork's pre-release number (e.g. `15.13.0-0` → `15.13.0-1`), and optionally publishes to npm `next`. Use this to test pre-releases of isolate-package.
+
+- **[`publish.yml`](.github/workflows/publish.yml)** — Publishes the fork to npm. Choose `next` for pre-release testing or `latest` to promote a stable release (which strips the pre-release suffix, e.g. `15.13.0-0` → `15.13.0`). Creates a git tag and GitHub release.
+
+### Versioning
+
+- Sync creates version `X.Y.Z-0` matching upstream `vX.Y.Z`
+- Each isolate-package update bumps the suffix: `-0` → `-1` → `-2`
+- Publishing to `latest` strips the suffix: `X.Y.Z-0` → `X.Y.Z`
 
 ## Documentation
 
