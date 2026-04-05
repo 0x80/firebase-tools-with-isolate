@@ -144,7 +144,7 @@ git checkout -b "$BRANCH_NAME"
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "🔀 Merging $TARGET_VERSION into $BRANCH_NAME…"
+echo "🔀 Merging $TARGET_VERSION into ${BRANCH_NAME}…"
 
 # List the files our isolate integration touches. When these conflict during
 # the merge, we take the upstream version and re-apply our changes cleanly
@@ -262,7 +262,7 @@ fi
 
 if [[ "$PUSH" == true ]]; then
   echo ""
-  echo "🚀 Pushing $BRANCH_NAME…"
+  echo "🚀 Pushing ${BRANCH_NAME}…"
   git push -u origin "$BRANCH_NAME"
 
   echo ""
