@@ -173,12 +173,26 @@ if ! git merge "$TARGET_VERSION" -X theirs --no-edit -m "Merge upstream $TARGET_
     fi
   done
 
-  # Check for any remaining conflicts
+  # Resolve any remaining conflicts by taking upstream's version.
+  # These are typically modify/delete conflicts on files the fork removed
+  # but upstream still maintains (e.g. workflow files, test configs).
   REMAINING=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
   if [[ -n "$REMAINING" ]]; then
     echo ""
+    echo "   Resolving remaining conflicts by taking upstream's version:"
+    while IFS= read -r f; do
+      echo "   $f"
+      git checkout --theirs -- "$f" 2>/dev/null || git rm -- "$f" 2>/dev/null || true
+      git add "$f" 2>/dev/null || true
+    done <<< "$REMAINING"
+  fi
+
+  # If there are still unresolved conflicts, bail out
+  STILL_CONFLICTED=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
+  if [[ -n "$STILL_CONFLICTED" ]]; then
+    echo ""
     echo "❌ Unresolved merge conflicts in:"
-    echo "$REMAINING"
+    echo "$STILL_CONFLICTED"
     echo ""
     echo "Please resolve these manually, then run:"
     echo "  node scripts/sync/apply-isolate-changes.mjs --version $VERSION_NUMBER --isolate-version '$ISOLATE_VERSION'"
