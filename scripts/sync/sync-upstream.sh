@@ -77,7 +77,7 @@ if ! git remote get-url upstream &>/dev/null; then
   git remote add upstream https://github.com/firebase/firebase-tools.git
 fi
 
-git fetch upstream --tags --quiet
+git fetch upstream --tags --force --quiet
 
 # ---------------------------------------------------------------------------
 # Step 2: Determine target version

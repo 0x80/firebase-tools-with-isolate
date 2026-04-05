@@ -48,7 +48,7 @@ jobs:
       - name: Add upstream remote
         run: |
           git remote add upstream https://github.com/firebase/firebase-tools.git || true
-          git fetch upstream --tags
+          git fetch upstream --tags --force
 
       - name: Determine target version
         id: version
