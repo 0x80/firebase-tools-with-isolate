@@ -1,12 +1,12 @@
 {
-  "name": "firebase-tools",
-  "version": "15.13.0",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.13.0-0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "firebase-tools",
-      "version": "15.13.0",
+      "name": "firebase-tools-with-isolate",
+      "version": "15.13.0-0",
       "license": "MIT",
       "dependencies": {
         "@apphosting/build": "^0.1.7",
@@ -3619,6 +3619,12 @@
       "engines": {
         "node": ">=16 || 14 >=14.17"
       }
+    },
+    "node_modules/@isaacs/string-locale-compare": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/@isaacs/string-locale-compare/-/string-locale-compare-1.1.0.tgz",
+      "integrity": "sha512-SQ7Kzhh9+D+ZW9MA0zkYv3VXhIDNx+LzM6EJ+/65I3QY+enU6Itte7E5XX7EWrqLW2FN4n06GWzBnPoC3th2aQ==",
+      "license": "ISC"
     },
     "node_modules/@istanbuljs/load-nyc-config": {
       "version": "1.1.0",
@@ -29753,6 +29759,11 @@
           "integrity": "sha512-tEBHqDnIoM/1rXME1zgka9g6Q2lcoCkxHLuc7ODJ5BxbP5d4c2Z5cGgtXAku59200Cx7diuHTOYfSBD8n6mm8A=="
         }
       }
+    },
+    "@isaacs/string-locale-compare": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/@isaacs/string-locale-compare/-/string-locale-compare-1.1.0.tgz",
+      "integrity": "sha512-SQ7Kzhh9+D+ZW9MA0zkYv3VXhIDNx+LzM6EJ+/65I3QY+enU6Itte7E5XX7EWrqLW2FN4n06GWzBnPoC3th2aQ=="
     },
     "@istanbuljs/load-nyc-config": {
       "version": "1.1.0",
