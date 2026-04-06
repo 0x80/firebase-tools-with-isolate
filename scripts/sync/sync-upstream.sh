@@ -337,7 +337,7 @@ fi
 if [[ "$PUSH" == true ]]; then
   echo ""
   echo "🚀 Pushing ${BRANCH_NAME}…"
-  git push -u origin "$BRANCH_NAME"
+  git push -u origin "$BRANCH_NAME" --force
 
   echo ""
   echo "✅ Done! Create a PR:"
