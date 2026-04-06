@@ -115,7 +115,7 @@ jobs:
             gh pr close "$EXISTING" --delete-branch 2>/dev/null || true
           fi
 
-          gh pr create \
+          if ! gh pr create \
             --base master \
             --head "$BRANCH" \
             --title "Sync with upstream $TARGET_TAG" \
@@ -136,4 +136,8 @@ jobs:
           ---
           _Created by the [sync-upstream](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow._
           EOF
-          )"
+          )"; then
+            echo ""
+            echo "::warning::Failed to create PR. The branch was pushed successfully."
+            echo "Create the PR manually: https://github.com/${{ github.repository }}/compare/master...$BRANCH"
+          fi
