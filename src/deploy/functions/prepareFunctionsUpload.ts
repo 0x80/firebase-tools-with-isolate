@@ -4,6 +4,7 @@ import * as filesize from "filesize";
 import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
+import * as crypto from "crypto";
 
 import type { IsolateExports } from "isolate-package";
 import { dynamicImport } from "../../dynamicImport";
@@ -74,6 +75,7 @@ async function packageSource(
   });
   const archive = exportType === "tar.gz" ? archiver("tar", { gzip: true }) : archiver("zip");
   const hashes: string[] = [];
+  let configHash = "";
 
   // We must ignore firebase-debug.log or weird things happen if
   // you're in the public dir when you deploy.
@@ -112,8 +114,7 @@ async function packageSource(
     if (typeof runtimeConfig !== "undefined") {
       // In order for hash to be consistent, configuration object tree must be sorted by key, only possible with arrays.
       const runtimeConfigHashString = JSON.stringify(convertToSortedKeyValueArray(runtimeConfig));
-      hashes.push(runtimeConfigHashString);
-
+      configHash = crypto.createHash("sha1").update(runtimeConfigHashString).digest("hex");
       const runtimeConfigString = JSON.stringify(runtimeConfig, null, 2);
       archive.append(runtimeConfigString, {
         name: CONFIG_DEST_FILE,
@@ -149,7 +150,8 @@ async function packageSource(
       filesize(archive.pointer()) +
       ") for uploading",
   );
-  const hash = hashes.join(".");
+  const sourceHash = crypto.createHash("sha1").update(hashes.sort().join("")).digest("hex");
+  const hash = configHash ? `${sourceHash}.${configHash}` : sourceHash;
   return { pathToSource: tmpFile, hash };
 }
 
