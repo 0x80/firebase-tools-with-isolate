@@ -645,7 +645,7 @@ export async function startAll(
     const prodEdition = options.config.data.firestore?.edition;
     const emulatorEdition = options.config.src.emulators?.firestore?.edition;
 
-    if (prodEdition !== emulatorEdition) {
+    if (prodEdition && emulatorEdition && prodEdition !== emulatorEdition) {
       firestoreLogger.logLabeled(
         "WARN",
         "firestore",
