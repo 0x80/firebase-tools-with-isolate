@@ -33,4 +33,6 @@ lib/
 dev/
 clean/
 .gemini/
+.claude/settings.local.json
+.worktree-test
 .env
