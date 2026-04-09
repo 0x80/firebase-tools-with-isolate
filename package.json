@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "mcpName": "io.github.firebase/firebase-mcp",
   "bin": {
-    "firebase": "lib/bin/firebase.js"
+    "firebase": "./lib/bin/firebase.js"
   },
   "scripts": {
     "build": "tsc && npm run copyfiles",

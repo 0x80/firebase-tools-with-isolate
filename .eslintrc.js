@@ -33,7 +33,6 @@ module.exports = {
     "no-prototype-builtins": "warn", // TODO(bkendall): remove, allow to error.
     "no-useless-escape": "warn", // TODO(bkendall): remove, allow to error.
     "prefer-promise-reject-errors": "warn", // TODO(bkendall): remove, allow to error.
-    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
   },
   overrides: [
     {
