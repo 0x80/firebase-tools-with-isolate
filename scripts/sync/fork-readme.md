@@ -70,7 +70,7 @@ For a complete working example of a modern monorepo setup, check out [mono-ts](h
 
 ## How this fork stays in sync
 
-Fork versions match upstream firebase-tools versions (e.g. `15.13.0-0` corresponds to upstream `v15.13.0`). The fork is kept in sync using automated tooling:
+Fork versions match upstream firebase-tools versions (e.g. `15.13.0` corresponds to upstream `v15.13.0`). The fork is kept in sync using automated tooling:
 
 ### Scripts (`scripts/sync/`)
 
@@ -97,15 +97,14 @@ All workflows use Node 24 and npm OIDC trusted publishing (provenance).
 
 - **[`sync-upstream.yml`](.github/workflows/sync-upstream.yml)** — Runs daily (09:00 UTC) and on manual dispatch. Checks for new upstream firebase-tools releases, merges to main, and triggers the publish workflow automatically. Can target a specific version.
 
-- **[`update-isolate.yml`](.github/workflows/update-isolate.yml)** — Updates the `isolate-package` dependency to a given version, bumps the fork's pre-release number (e.g. `15.13.0-0` → `15.13.0-1`), and opens a PR targeting `main`. Follow up with the publish workflow to release to npm. Follow up with the publish workflow to release to npm.
+- **[`update-isolate.yml`](.github/workflows/update-isolate.yml)** — Updates the `isolate-package` dependency to a given version, bumps the fork's pre-release number (e.g. `15.13.0` → `15.13.0-1`), and opens a PR targeting `main`. Follow up with the publish workflow to release to npm.
 
-- **[`publish.yml`](.github/workflows/publish.yml)** — Publishes the fork to npm. Choose `next` for pre-release testing or `latest` to promote a stable release (which strips the pre-release suffix, e.g. `15.13.0-0` → `15.13.0`). Creates a git tag and GitHub release.
+- **[`publish.yml`](.github/workflows/publish.yml)** — Publishes the fork to npm. Called automatically by the sync workflow, or can be triggered manually. Creates a git tag and GitHub release.
 
 ### Versioning
 
-- Sync creates version `X.Y.Z-0` matching upstream `vX.Y.Z`
-- Each isolate-package update bumps the suffix: `-0` → `-1` → `-2`
-- Publishing to `latest` strips the suffix: `X.Y.Z-0` → `X.Y.Z`
+- The daily sync automatically publishes version `X.Y.Z` matching upstream `vX.Y.Z`
+- Isolate-package updates use pre-release versions (`X.Y.Z-1`, `X.Y.Z-2`, ...) published under the `next` dist-tag
 
 ## Issues
 
