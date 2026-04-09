@@ -27,8 +27,13 @@ permissions:
   contents: write
   id-token: write
 
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
 jobs:
   sync:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       synced: ${{ steps.result.outputs.synced }}
