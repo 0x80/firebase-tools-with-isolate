@@ -95,7 +95,7 @@ The sync can also be triggered manually:
 
 All workflows use Node 24 and npm OIDC trusted publishing (provenance).
 
-- **[`sync-upstream.yml`](.github/workflows/sync-upstream.yml)** — Runs daily (09:00 UTC) and on manual dispatch. Checks for new upstream firebase-tools releases and opens a PR with the synced result. Can target a specific version.
+- **[`sync-upstream.yml`](.github/workflows/sync-upstream.yml)** — Runs daily (09:00 UTC) and on manual dispatch. Checks for new upstream firebase-tools releases, merges to main, and triggers the publish workflow automatically. Can target a specific version.
 
 - **[`update-isolate.yml`](.github/workflows/update-isolate.yml)** — Updates the `isolate-package` dependency to a given version, bumps the fork's pre-release number (e.g. `15.13.0-0` → `15.13.0-1`), and opens a PR targeting `main`. Follow up with the publish workflow to release to npm. Follow up with the publish workflow to release to npm.
 
@@ -106,6 +106,10 @@ All workflows use Node 24 and npm OIDC trusted publishing (provenance).
 - Sync creates version `X.Y.Z-0` matching upstream `vX.Y.Z`
 - Each isolate-package update bumps the suffix: `-0` → `-1` → `-2`
 - Publishing to `latest` strips the suffix: `X.Y.Z-0` → `X.Y.Z`
+
+## Issues
+
+Issues on this repository are disabled. If you encounter a problem related to the isolate process or monorepo deployment, please submit it at [isolate-package](https://github.com/0x80/isolate-package/issues). For issues unrelated to the isolate integration, refer to the upstream [firebase-tools](https://github.com/firebase/firebase-tools/issues).
 
 ## Documentation
 
