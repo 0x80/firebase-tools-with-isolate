@@ -1,4 +1,3 @@
-- Moved MCP server `firebase-debug.log` to `~/.cache/firebase/firebase-debug.log`. (#9982)
-- Added a prompt to `firebase init` to install Agent Skills for Firebase.
-- Updated the Firebase Data Connect local toolkit to v3.3.1, which includes the following changes: (#10190)
-  - [added] Support for configuring client-side caching in connector.yaml / generate section
+- Add validation to check if backendId exists in `firebase.json` when `--only` flag is used. (#10161)
+- Updated default Postgres version for Data Connect to 18. (#10234)
+- Update Typescript version to v6 in templates for functions and extensions. (#10232)
