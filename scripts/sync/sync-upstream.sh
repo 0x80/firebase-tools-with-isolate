@@ -72,7 +72,7 @@ cd "$ROOT_DIR"
 # The `|| ''` in the node expression is load-bearing: without it, a missing
 # key would print the literal text "undefined" and silently pass the check.
 if [[ -z "$ISOLATE_VERSION" ]]; then
-  ISOLATE_VERSION=$(node -p "require('./package.json').dependencies['isolate-package'] || ''")
+  ISOLATE_VERSION=$(node -p "require('./package.json').dependencies?.['isolate-package'] || ''")
   if [[ -z "$ISOLATE_VERSION" ]]; then
     echo "❌ --isolate-version not provided and package.json has no dependencies['isolate-package']"
     exit 1

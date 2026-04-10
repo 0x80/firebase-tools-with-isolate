@@ -99,6 +99,7 @@ function patchPackageJson() {
     );
     process.exit(1);
   }
+  pkg.dependencies ??= {};
   pkg.dependencies["isolate-package"] = isolateVersion;
 
   // Remove publishConfig — upstream uses Google's internal Wombat Dressing Room
