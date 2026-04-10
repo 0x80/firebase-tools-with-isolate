@@ -12,8 +12,8 @@
  *
  * Options:
  *   --version, -v                 Upstream version (read from package.json if omitted)
- *   --isolate-version, -i         isolate-package semver range (default: ^1.27.0-4)
- *   --detect-monorepo-version, -d detect-monorepo semver range (default: ^1.0.0)
+ *   --isolate-version, -i         isolate-package semver range (default: current value in package.json)
+ *   --detect-monorepo-version, -d detect-monorepo semver range (default: current value in package.json)
  */
 
 import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
@@ -27,16 +27,8 @@ const ROOT = join(__dirname, "..", "..");
 const { values: args } = parseArgs({
   options: {
     version: { type: "string", short: "v" },
-    "isolate-version": {
-      type: "string",
-      short: "i",
-      default: "^1.27.0-4",
-    },
-    "detect-monorepo-version": {
-      type: "string",
-      short: "d",
-      default: "^1.1.0",
-    },
+    "isolate-version": { type: "string", short: "i" },
+    "detect-monorepo-version": { type: "string", short: "d" },
   },
 });
 
@@ -96,10 +88,31 @@ function patchPackageJson() {
     }
   }
 
-  // Add isolate-package + detect-monorepo dependencies (sorted position
-  // doesn't matter, npm handles it)
-  pkg.dependencies["isolate-package"] = args["isolate-version"];
-  pkg.dependencies["detect-monorepo"] = args["detect-monorepo-version"];
+  // Fall back to the values already in package.json when the version flags
+  // weren't passed. This only helps direct manual invocations: the sync
+  // pipeline calls this script *after* merging upstream, at which point
+  // package.json no longer has the isolate-package or detect-monorepo keys.
+  // sync-upstream.sh captures the values before the merge and always passes
+  // them explicitly.
+  const isolateVersion =
+    args["isolate-version"] ?? pkg.dependencies?.["isolate-package"];
+  if (!isolateVersion) {
+    console.error(
+      "\n❌ --isolate-version not provided and package.json has no dependencies['isolate-package']\n",
+    );
+    process.exit(1);
+  }
+  const detectMonorepoVersion =
+    args["detect-monorepo-version"] ?? pkg.dependencies?.["detect-monorepo"];
+  if (!detectMonorepoVersion) {
+    console.error(
+      "\n❌ --detect-monorepo-version not provided and package.json has no dependencies['detect-monorepo']\n",
+    );
+    process.exit(1);
+  }
+  pkg.dependencies ??= {};
+  pkg.dependencies["isolate-package"] = isolateVersion;
+  pkg.dependencies["detect-monorepo"] = detectMonorepoVersion;
 
   // Remove publishConfig — upstream uses Google's internal Wombat Dressing Room
   // registry which we can't and shouldn't use
