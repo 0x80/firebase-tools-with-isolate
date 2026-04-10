@@ -12,7 +12,7 @@
  *
  * Options:
  *   --version, -v           Upstream version (read from package.json if omitted)
- *   --isolate-version, -i   isolate-package semver range (default: ^1.27.0-4)
+ *   --isolate-version, -i   isolate-package semver range (default: current value in package.json)
  */
 
 import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
@@ -26,11 +26,7 @@ const ROOT = join(__dirname, "..", "..");
 const { values: args } = parseArgs({
   options: {
     version: { type: "string", short: "v" },
-    "isolate-version": {
-      type: "string",
-      short: "i",
-      default: "^1.27.0-4",
-    },
+    "isolate-version": { type: "string", short: "i" },
   },
 });
 
@@ -90,8 +86,20 @@ function patchPackageJson() {
     }
   }
 
-  // Add isolate-package dependency (sorted position doesn't matter, npm handles it)
-  pkg.dependencies["isolate-package"] = args["isolate-version"];
+  // Fall back to the value already in package.json when --isolate-version
+  // wasn't passed. This only helps direct manual invocations: the sync
+  // pipeline calls this script *after* merging upstream, at which point
+  // package.json no longer has an isolate-package key. sync-upstream.sh
+  // captures the value before the merge and always passes it explicitly.
+  const isolateVersion =
+    args["isolate-version"] ?? pkg.dependencies?.["isolate-package"];
+  if (!isolateVersion) {
+    console.error(
+      "\n❌ --isolate-version not provided and package.json has no dependencies['isolate-package']\n",
+    );
+    process.exit(1);
+  }
+  pkg.dependencies["isolate-package"] = isolateVersion;
 
   // Remove publishConfig — upstream uses Google's internal Wombat Dressing Room
   // registry which we can't and shouldn't use
