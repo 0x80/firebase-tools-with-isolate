@@ -3,7 +3,7 @@
 /**
  * Apply isolate-package integration changes to a clean upstream firebase-tools
  * checkout. This script makes the minimal set of changes needed to add
- * isolate-package support.
+ * isolate-package support with automatic monorepo detection.
  *
  * It's designed to be idempotent — running it twice produces the same result.
  *
@@ -11,8 +11,9 @@
  *   node scripts/sync/apply-isolate-changes.mjs [options]
  *
  * Options:
- *   --version, -v           Upstream version (read from package.json if omitted)
- *   --isolate-version, -i   isolate-package semver range (default: ^1.27.0-4)
+ *   --version, -v                 Upstream version (read from package.json if omitted)
+ *   --isolate-version, -i         isolate-package semver range (default: ^1.27.0-4)
+ *   --detect-monorepo-version, -d detect-monorepo semver range (default: ^1.0.0)
  */
 
 import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
@@ -30,6 +31,11 @@ const { values: args } = parseArgs({
       type: "string",
       short: "i",
       default: "^1.27.0-4",
+    },
+    "detect-monorepo-version": {
+      type: "string",
+      short: "d",
+      default: "^1.0.0",
     },
   },
 });
@@ -90,8 +96,10 @@ function patchPackageJson() {
     }
   }
 
-  // Add isolate-package dependency (sorted position doesn't matter, npm handles it)
+  // Add isolate-package + detect-monorepo dependencies (sorted position
+  // doesn't matter, npm handles it)
   pkg.dependencies["isolate-package"] = args["isolate-version"];
+  pkg.dependencies["detect-monorepo"] = args["detect-monorepo-version"];
 
   // Remove publishConfig — upstream uses Google's internal Wombat Dressing Room
   // registry which we can't and shouldn't use
@@ -102,66 +110,47 @@ function patchPackageJson() {
 }
 
 // ---------------------------------------------------------------------------
-// 2. src/firebaseConfig.ts — add isolate?: boolean to FunctionConfigBase
-// ---------------------------------------------------------------------------
-
-function patchFirebaseConfig() {
-  const filePath = "src/firebaseConfig.ts";
-  let content = readFile(filePath);
-
-  if (content.includes("isolate?: boolean")) {
-    console.log(`⏭️  ${filePath} — already patched`);
-    return;
-  }
-
-  const anchor = "  prefix?: string;\n} & Deployable;";
-  assertAnchor(content, anchor, filePath);
-
-  content = content.replace(
-    anchor,
-    [
-      "  prefix?: string;",
-      "  // Optional: Enable isolate-package for monorepo support",
-      "  isolate?: boolean;",
-      "} & Deployable;",
-    ].join("\n"),
-  );
-
-  writeFile(filePath, content);
-  console.log(`✅ ${filePath} → added isolate?: boolean to FunctionConfigBase`);
-}
-
-// ---------------------------------------------------------------------------
-// 3. src/deploy/functions/prepareFunctionsUpload.ts — add runIsolate()
+// 2. src/deploy/functions/prepareFunctionsUpload.ts — add isMonorepoSource()
+//    and runIsolate()
 // ---------------------------------------------------------------------------
 
 function patchPrepareFunctionsUpload() {
   const filePath = "src/deploy/functions/prepareFunctionsUpload.ts";
   let content = readFile(filePath);
 
-  if (content.includes('import type { IsolateExports } from "isolate-package"')) {
+  if (content.includes("isMonorepoSource")) {
     console.log(`⏭️  ${filePath} — already patched`);
     return;
   }
 
-  // --- Add isolate-package imports ---
+  // --- Add detect-monorepo + isolate-package imports ---
   const importAnchor = 'import { FirebaseError } from "../../error";';
   assertAnchor(content, importAnchor, filePath);
 
   content = content.replace(
     importAnchor,
     [
+      'import { detectMonorepo } from "detect-monorepo";',
       'import type { IsolateExports } from "isolate-package";',
       'import { dynamicImport } from "../../dynamicImport";',
       'import { FirebaseError } from "../../error";',
     ].join("\n"),
   );
 
-  // --- Add runIsolate function before convertToSortedKeyValueArray ---
+  // --- Add isMonorepoSource + runIsolate before convertToSortedKeyValueArray ---
   const functionAnchor = "export function convertToSortedKeyValueArray";
   assertAnchor(content, functionAnchor, filePath);
 
-  const runIsolateFunction = `\
+  const injectedFunctions = `\
+/**
+ * Check whether the given absolute source directory sits inside a monorepo
+ * workspace (pnpm, npm/yarn/bun workspaces, or Rush). Used as a cheap gate
+ * before invoking isolate-package.
+ */
+export function isMonorepoSource(absoluteSourceDir: string): boolean {
+  return detectMonorepo(absoluteSourceDir) !== null;
+}
+
 /**
  * Isolate the source directory and return the path to the isolated directory.
  */
@@ -201,40 +190,58 @@ export async function runIsolate(sourceDirName: string): Promise<string> {
 
 `;
 
-  content = content.replace(functionAnchor, runIsolateFunction + functionAnchor);
+  content = content.replace(functionAnchor, injectedFunctions + functionAnchor);
 
   writeFile(filePath, content);
-  console.log(`✅ ${filePath} → added runIsolate()`);
+  console.log(`✅ ${filePath} → added isMonorepoSource() and runIsolate()`);
 }
 
 // ---------------------------------------------------------------------------
-// 4. src/deploy/functions/prepare.ts — import and call runIsolate()
+// 3. src/deploy/functions/prepare.ts — import and call detection + runIsolate
 // ---------------------------------------------------------------------------
 
 function patchPrepare() {
   const filePath = "src/deploy/functions/prepare.ts";
   let content = readFile(filePath);
 
-  if (content.includes("runIsolate") && content.includes("localCfg.isolate")) {
+  if (content.includes("isMonorepoSource")) {
     console.log(`⏭️  ${filePath} — already patched`);
     return;
   }
 
-  // Strip any leftover runIsolate references from a bad merge so we can
-  // re-apply cleanly from upstream's version.
+  // Strip any leftover isolate references from a bad merge (either the old
+  // flag-based block, an older detectMonorepoViaIsolate one, or a bare
+  // isMonorepoSource block) so we can re-apply cleanly from upstream's version.
   content = content
     .replace(/, runIsolate/g, "")
+    .replace(/, detectMonorepoViaIsolate/g, "")
+    .replace(/, isMonorepoSource/g, "")
     .replace(/\n\n? {4}if \(localCfg\.isolate === true\) \{\n.*runIsolate.*\n {4}\}\n/g, "\n")
+    .replace(
+      /\n\n? {4}if \(await detectMonorepoViaIsolate\([^)]+\)\) \{\n.*runIsolate.*\n {4}\}\n/g,
+      "\n",
+    )
+    .replace(
+      /\n\n? {4}if \(isMonorepoSource\([^)]+\)\) \{\n.*runIsolate.*\n {4}\}\n/g,
+      "\n",
+    )
     .replace(/\blet sourceDir = options\.config\.path/g, "const sourceDir = options.config.path");
 
-  // --- Add runIsolate to the prepareFunctionsUpload import ---
+  // --- Add isMonorepoSource + runIsolate to the import ---
   const importAnchor =
     'import { getFunctionsConfig, prepareFunctionsUpload } from "./prepareFunctionsUpload";';
   assertAnchor(content, importAnchor, filePath);
 
   content = content.replace(
     importAnchor,
-    'import { getFunctionsConfig, prepareFunctionsUpload, runIsolate } from "./prepareFunctionsUpload";',
+    [
+      "import {",
+      "  getFunctionsConfig,",
+      "  isMonorepoSource,",
+      "  prepareFunctionsUpload,",
+      "  runIsolate,",
+      '} from "./prepareFunctionsUpload";',
+    ].join("\n"),
   );
 
   // --- Change `const sourceDir` to `let sourceDir` in the Phase 3 block ---
@@ -269,8 +276,8 @@ function patchPrepare() {
     isolateBlockRegex,
     [
       "$1",
-      "    if (localCfg.isolate === true) {\n",
-      '      sourceDir = await runIsolate(sourceDirName);\n',
+      "    if (isMonorepoSource(sourceDir)) {\n",
+      "      sourceDir = await runIsolate(sourceDirName);\n",
       "    }\n",
       "\n",
       "$2",
@@ -278,11 +285,11 @@ function patchPrepare() {
   );
 
   writeFile(filePath, content);
-  console.log(`✅ ${filePath} → added runIsolate import and call`);
+  console.log(`✅ ${filePath} → added isMonorepoSource/runIsolate import and call`);
 }
 
 // ---------------------------------------------------------------------------
-// 5. README.md — replace with fork documentation
+// 4. README.md — replace with fork documentation
 // ---------------------------------------------------------------------------
 
 function patchReadme() {
@@ -299,7 +306,6 @@ console.log("\n🔧 Applying isolate-package integration changes…\n");
 
 try {
   patchPackageJson();
-  patchFirebaseConfig();
   patchPrepareFunctionsUpload();
   patchPrepare();
   patchReadme();

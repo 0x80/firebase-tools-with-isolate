@@ -34,6 +34,7 @@
         "cross-spawn": "^7.0.5",
         "csv-parse": "^5.0.4",
         "deep-equal-in-any-order": "^2.0.6",
+        "detect-monorepo": "^1.0.0",
         "exegesis": "^4.2.0",
         "exegesis-express": "^4.0.0",
         "express": "^4.16.4",
@@ -11720,6 +11721,15 @@
       "engines": {
         "node": ">= 0.8",
         "npm": "1.2.8000 || >= 1.4.16"
+      }
+    },
+    "node_modules/detect-monorepo": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/detect-monorepo/-/detect-monorepo-1.0.0.tgz",
+      "integrity": "sha512-+1cLakd2KkmKvNjmI2pi9ypQv5QDykoEdc5dhqhbRn1OPnMyzmBwJhujf4nKxCnHEsdIT6w7ujk9xBNWyGm8dA==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=20.0.0"
       }
     },
     "node_modules/devalue": {
@@ -35563,6 +35573,11 @@
       "version": "1.2.0",
       "resolved": "https://registry.npmjs.org/destroy/-/destroy-1.2.0.tgz",
       "integrity": "sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg=="
+    },
+    "detect-monorepo": {
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/detect-monorepo/-/detect-monorepo-1.0.0.tgz",
+      "integrity": "sha512-+1cLakd2KkmKvNjmI2pi9ypQv5QDykoEdc5dhqhbRn1OPnMyzmBwJhujf4nKxCnHEsdIT6w7ujk9xBNWyGm8dA=="
     },
     "devalue": {
       "version": "4.3.0",

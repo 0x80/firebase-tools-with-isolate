@@ -31,7 +31,12 @@ import {
   targetCodebases,
 } from "./functionsDeployHelper";
 import { logLabeledBullet } from "../../utils";
-import { getFunctionsConfig, prepareFunctionsUpload, runIsolate } from "./prepareFunctionsUpload";
+import {
+  getFunctionsConfig,
+  isMonorepoSource,
+  prepareFunctionsUpload,
+  runIsolate,
+} from "./prepareFunctionsUpload";
 import { promptForFailurePolicies, promptForMinInstances } from "./prompts";
 import { needProjectId, needProjectNumber } from "../../projectUtils";
 import { logger } from "../../logger";
@@ -224,7 +229,7 @@ export async function prepare(
       );
     }
 
-    if (localCfg.isolate === true) {
+    if (isMonorepoSource(sourceDir)) {
       sourceDir = await runIsolate(sourceDirName);
     }
 

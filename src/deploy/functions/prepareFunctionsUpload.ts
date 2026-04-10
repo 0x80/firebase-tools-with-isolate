@@ -6,6 +6,7 @@ import * as path from "path";
 import * as tmp from "tmp";
 import * as crypto from "crypto";
 
+import { detectMonorepo } from "detect-monorepo";
 import type { IsolateExports } from "isolate-package";
 import { dynamicImport } from "../../dynamicImport";
 import { FirebaseError } from "../../error";
@@ -164,6 +165,15 @@ export async function prepareFunctionsUpload(
   options?: { exportType: "zip" | "tar.gz" },
 ): Promise<PackagedSourceInfo | undefined> {
   return packageSource(projectDir, sourceDir, config, additionalSources, runtimeConfig, options);
+}
+
+/**
+ * Check whether the given absolute source directory sits inside a monorepo
+ * workspace (pnpm, npm/yarn/bun workspaces, or Rush). Used as a cheap gate
+ * before invoking isolate-package.
+ */
+export function isMonorepoSource(absoluteSourceDir: string): boolean {
+  return detectMonorepo(absoluteSourceDir) !== null;
 }
 
 /**
