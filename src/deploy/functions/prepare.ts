@@ -30,7 +30,7 @@ import {
   groupEndpointsByCodebase,
   targetCodebases,
 } from "./functionsDeployHelper";
-import { logLabeledBullet } from "../../utils";
+import { logLabeledBullet, logLabeledWarning } from "../../utils";
 import {
   getFunctionsConfig,
   isMonorepoSource,
@@ -226,6 +226,13 @@ export async function prepare(
       logLabeledBullet(
         "functions",
         `preparing ${clc.bold(sourceDirName)} directory for uploading...`,
+      );
+    }
+
+    if ((localCfg as { isolate?: boolean }).isolate === true) {
+      logLabeledWarning(
+        "functions",
+        "The 'isolate' flag in firebase.json is deprecated and no longer needed — monorepo detection is now automatic. Please remove 'isolate' from your functions config.",
       );
     }
 

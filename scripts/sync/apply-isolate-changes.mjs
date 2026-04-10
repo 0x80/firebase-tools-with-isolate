@@ -223,15 +223,15 @@ function patchPrepare() {
   }
 
   // Strip any leftover isolate references from a bad merge (either the old
-  // flag-based block, an older detectMonorepoViaIsolate one, or a bare
-  // isMonorepoSource block) so we can re-apply cleanly from upstream's version.
+  // flag-based block, a bare isMonorepoSource block, or an existing
+  // deprecation warning) so we can re-apply cleanly from upstream's version.
   content = content
     .replace(/, runIsolate/g, "")
-    .replace(/, detectMonorepoViaIsolate/g, "")
     .replace(/, isMonorepoSource/g, "")
+    .replace(/, logLabeledWarning/g, "")
     .replace(/\n\n? {4}if \(localCfg\.isolate === true\) \{\n.*runIsolate.*\n {4}\}\n/g, "\n")
     .replace(
-      /\n\n? {4}if \(await detectMonorepoViaIsolate\([^)]+\)\) \{\n.*runIsolate.*\n {4}\}\n/g,
+      /\n\n? {4}if \(\(localCfg as \{ isolate\?: boolean \}\)\.isolate === true\) \{[\s\S]*?\n {4}\}\n/g,
       "\n",
     )
     .replace(
@@ -239,6 +239,14 @@ function patchPrepare() {
       "\n",
     )
     .replace(/\blet sourceDir = options\.config\.path/g, "const sourceDir = options.config.path");
+
+  // --- Add logLabeledWarning to utils import ---
+  const utilsImportAnchor = 'import { logLabeledBullet } from "../../utils";';
+  assertAnchor(content, utilsImportAnchor, filePath);
+  content = content.replace(
+    utilsImportAnchor,
+    'import { logLabeledBullet, logLabeledWarning } from "../../utils";',
+  );
 
   // --- Add isMonorepoSource + runIsolate to the import ---
   const importAnchor =
@@ -289,6 +297,13 @@ function patchPrepare() {
     isolateBlockRegex,
     [
       "$1",
+      "    if ((localCfg as { isolate?: boolean }).isolate === true) {\n",
+      "      logLabeledWarning(\n",
+      '        "functions",\n',
+      "        \"The 'isolate' flag in firebase.json is deprecated and no longer needed — monorepo detection is now automatic. Please remove 'isolate' from your functions config.\",\n",
+      "      );\n",
+      "    }\n",
+      "\n",
       "    if (isMonorepoSource(sourceDir)) {\n",
       "      sourceDir = await runIsolate(sourceDirName);\n",
       "    }\n",
