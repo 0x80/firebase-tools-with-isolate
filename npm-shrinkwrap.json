@@ -46,7 +46,7 @@
         "glob": "^10.5.0",
         "google-auth-library": "^9.11.0",
         "ignore": "^7.0.4",
-        "isolate-package": "^1.30.0",
+        "isolate-package": "^1.31.0",
         "js-yaml": "^3.14.2",
         "jsonwebtoken": "^9.0.2",
         "leven": "^3.1.0",
@@ -15962,9 +15962,9 @@
       "integrity": "sha1-6PvzdNxVb/iUehDcsFctYz8s+hA="
     },
     "node_modules/isolate-package": {
-      "version": "1.30.0",
-      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.30.0.tgz",
-      "integrity": "sha512-5dcuZ+Q4l7f2uJOsscFlFvdfY6v13WaxXbL2C0GYFbY9b7lAgICYZtwmR7NUY79L0K1Vp7XS/+QkbwYRRnXHuw==",
+      "version": "1.31.0",
+      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.31.0.tgz",
+      "integrity": "sha512-deRqi2oKPn8Cted8lnAU2lRaxR/g2tNknjDd+RQ61B+S0SZtahmFugh3nG8w9DdQ63RDijYCxzVr+OGlKxOjRw==",
       "license": "MIT",
       "dependencies": {
         "@npmcli/arborist": "^9.4.2",
@@ -15972,6 +15972,7 @@
         "@pnpm/logger": "^1001.0.1",
         "@pnpm/types": "^1001.3.0",
         "consola": "^3.4.2",
+        "detect-monorepo": "^1.0.0",
         "fs-extra": "^11.3.4",
         "get-or-throw": "^3.0.1",
         "get-tsconfig": "^4.13.7",
@@ -38654,15 +38655,16 @@
       "integrity": "sha1-6PvzdNxVb/iUehDcsFctYz8s+hA="
     },
     "isolate-package": {
-      "version": "1.30.0",
-      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.30.0.tgz",
-      "integrity": "sha512-5dcuZ+Q4l7f2uJOsscFlFvdfY6v13WaxXbL2C0GYFbY9b7lAgICYZtwmR7NUY79L0K1Vp7XS/+QkbwYRRnXHuw==",
+      "version": "1.31.0",
+      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.31.0.tgz",
+      "integrity": "sha512-deRqi2oKPn8Cted8lnAU2lRaxR/g2tNknjDd+RQ61B+S0SZtahmFugh3nG8w9DdQ63RDijYCxzVr+OGlKxOjRw==",
       "requires": {
         "@npmcli/arborist": "^9.4.2",
         "@npmcli/config": "^10.8.1",
         "@pnpm/logger": "^1001.0.1",
         "@pnpm/types": "^1001.3.0",
         "consola": "^3.4.2",
+        "detect-monorepo": "^1.0.0",
         "fs-extra": "^11.3.4",
         "get-or-throw": "^3.0.1",
         "get-tsconfig": "^4.13.7",
