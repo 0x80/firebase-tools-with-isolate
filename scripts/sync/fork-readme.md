@@ -28,7 +28,7 @@ In package.json scripts, `npx` is not required — scripts already prefer locall
 
 ## Configuration
 
-No configuration is required. When you run `firebase deploy`, the fork calls `detectMonorepo` from `isolate-package` on the functions source directory. If a workspace root is found (pnpm-workspace.yaml, a parent `package.json` with a `workspaces` field, or `rush.json`), isolation runs automatically. Otherwise the deploy proceeds exactly as in upstream firebase-tools.
+No configuration is required. When you run `firebase deploy`, the fork calls `detectMonorepo` from `detect-monorepo` on the functions source directory. If a workspace root is found (pnpm-workspace.yaml, a parent `package.json` with a `workspaces` field, or `rush.json`), isolation runs automatically. Otherwise the deploy proceeds exactly as in upstream firebase-tools.
 
 ```json
 {
