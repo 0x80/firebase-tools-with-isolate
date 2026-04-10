@@ -191,7 +191,6 @@ echo "🔀 Merging $TARGET_VERSION into ${BRANCH_NAME}…"
 # the merge, we take the upstream version and re-apply our changes cleanly
 # via the apply script. Only list files that the apply script actually patches.
 ISOLATE_FILES=(
-  "src/firebaseConfig.ts"
   "src/deploy/functions/prepareFunctionsUpload.ts"
   "src/deploy/functions/prepare.ts"
   "package.json"
@@ -253,7 +252,6 @@ echo "   Merge complete."
 # fork's import order differs from upstream. The apply script will re-add
 # the isolate changes cleanly on top.
 ISOLATE_SOURCE_FILES=(
-  "src/firebaseConfig.ts"
   "src/deploy/functions/prepareFunctionsUpload.ts"
   "src/deploy/functions/prepare.ts"
 )
