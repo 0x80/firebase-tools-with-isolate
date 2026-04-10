@@ -139,7 +139,7 @@
     "glob": "^10.5.0",
     "google-auth-library": "^9.11.0",
     "ignore": "^7.0.4",
-    "detect-monorepo": "^1.0.0",
+    "detect-monorepo": "^1.1.0",
     "isolate-package": "^1.27.0-4",
     "js-yaml": "^3.14.2",
     "jsonwebtoken": "^9.0.2",

@@ -35,7 +35,7 @@ const { values: args } = parseArgs({
     "detect-monorepo-version": {
       type: "string",
       short: "d",
-      default: "^1.0.0",
+      default: "^1.1.0",
     },
   },
 });
