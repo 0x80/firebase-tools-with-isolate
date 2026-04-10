@@ -1,6 +1,6 @@
 # Firebase CLI with monorepo support
 
-This is a fork of [firebase-tools](https://github.com/firebase/firebase-tools) that integrates [isolate-package](https://github.com/0x80/isolate-package/) into the functions `deploy` command to [support monorepo setups](https://thijs-koerselman.medium.com/deploy-to-firebase-without-the-hacks-e685de39025e).
+This is a fork of [firebase-tools](https://github.com/firebase/firebase-tools) that integrates [isolate-package](https://github.com/0x80/isolate-package/) into the functions `deploy` command to [support monorepo setups](https://thijs-koerselman.medium.com/deploy-to-firebase-without-the-hacks-e685de39025e). Whether to run isolation is decided by [detect-monorepo](https://github.com/0x80/detect-monorepo), so standalone projects are untouched.
 
 The integration is minimal — roughly 50 lines of code across 3 files — and does not affect any existing functionality. Isolation runs **automatically** whenever your functions source directory sits inside a detected monorepo (pnpm / npm / yarn / bun workspaces, or Rush). Standalone projects are left untouched and behave exactly like upstream.
 
@@ -105,7 +105,7 @@ All workflows use Node 24 and npm OIDC trusted publishing (provenance).
 
 ## Issues
 
-Issues on this repository are disabled. If you encounter a problem related to the isolate process or monorepo deployment, please submit it at [isolate-package](https://github.com/0x80/isolate-package/issues). For issues unrelated to the isolate integration, refer to the upstream [firebase-tools](https://github.com/firebase/firebase-tools/issues).
+Issues on this repository are disabled. For problems with the isolation step itself, submit them at [isolate-package](https://github.com/0x80/isolate-package/issues). For problems with how the fork decides whether a project is a monorepo, submit them at [detect-monorepo](https://github.com/0x80/detect-monorepo/issues). For anything unrelated to the isolate integration, refer to the upstream [firebase-tools](https://github.com/firebase/firebase-tools/issues).
 
 ## Documentation
 
