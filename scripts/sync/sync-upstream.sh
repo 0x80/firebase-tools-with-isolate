@@ -8,13 +8,14 @@ set -euo pipefail
 #   ./scripts/sync/sync-upstream.sh [options]
 #
 # Options:
-#   --target, -t VERSION    Upstream version to sync to (e.g. v15.13.0).
-#                           Defaults to the latest upstream release tag.
-#   --isolate-version, -i   isolate-package version (default: current value in package.json)
-#   --branch, -b NAME       Branch name to create. Defaults to auto-generated.
-#   --no-push               Don't push the branch (for local testing).
-#   --no-build              Skip the build verification step.
-#   --help, -h              Show this help message.
+#   --target, -t VERSION            Upstream version to sync to (e.g. v15.13.0).
+#                                   Defaults to the latest upstream release tag.
+#   --isolate-version, -i           isolate-package version (default: current value in package.json)
+#   --detect-monorepo-version, -d   detect-monorepo version (default: current value in package.json)
+#   --branch, -b NAME               Branch name to create. Defaults to auto-generated.
+#   --no-push                       Don't push the branch (for local testing).
+#   --no-build                      Skip the build verification step.
+#   --help, -h                      Show this help message.
 #
 # What it does:
 #   1. Fetches the latest upstream tags
@@ -31,6 +32,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Defaults
 TARGET_VERSION=""
 ISOLATE_VERSION=""
+DETECT_MONOREPO_VERSION=""
 BRANCH_NAME=""
 PUSH=true
 BUILD=true
@@ -40,6 +42,7 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --target|-t)  TARGET_VERSION="$2"; shift 2 ;;
     --isolate-version|-i) ISOLATE_VERSION="$2"; shift 2 ;;
+    --detect-monorepo-version|-d) DETECT_MONOREPO_VERSION="$2"; shift 2 ;;
     --branch|-b)  BRANCH_NAME="$2"; shift 2 ;;
     --no-push)    PUSH=false; shift ;;
     --no-build)   BUILD=false; shift ;;
@@ -49,13 +52,14 @@ Usage:
   ./scripts/sync/sync-upstream.sh [options]
 
 Options:
-  --target, -t VERSION    Upstream version to sync to (e.g. v15.13.0).
-                          Defaults to the latest upstream release tag.
-  --isolate-version, -i   isolate-package version (default: current value in package.json)
-  --branch, -b NAME       Branch name to create. Defaults to auto-generated.
-  --no-push               Don't push the branch (for local testing).
-  --no-build              Skip the build verification step.
-  --help, -h              Show this help message.
+  --target, -t VERSION            Upstream version to sync to (e.g. v15.13.0).
+                                  Defaults to the latest upstream release tag.
+  --isolate-version, -i           isolate-package version (default: current value in package.json)
+  --detect-monorepo-version, -d   detect-monorepo version (default: current value in package.json)
+  --branch, -b NAME               Branch name to create. Defaults to auto-generated.
+  --no-push                       Don't push the branch (for local testing).
+  --no-build                      Skip the build verification step.
+  --help, -h                      Show this help message.
 HELP
       exit 0
       ;;
@@ -65,12 +69,13 @@ done
 
 cd "$ROOT_DIR"
 
-# If no --isolate-version was provided, preserve the current value from
+# If no version flags were provided, preserve the current values from
 # package.json. This MUST happen before the upstream merge: the merge uses
 # -X theirs and replaces package.json with upstream's copy, which has no
-# isolate-package key at all — so reading it later would come up empty.
-# The `|| ''` in the node expression is load-bearing: without it, a missing
-# key would print the literal text "undefined" and silently pass the check.
+# isolate-package or detect-monorepo key at all — so reading it later would
+# come up empty. The `|| ''` in the node expression is load-bearing: without
+# it, a missing key would print the literal text "undefined" and silently
+# pass the check.
 if [[ -z "$ISOLATE_VERSION" ]]; then
   ISOLATE_VERSION=$(node -p "require('./package.json').dependencies?.['isolate-package'] || ''")
   if [[ -z "$ISOLATE_VERSION" ]]; then
@@ -78,6 +83,15 @@ if [[ -z "$ISOLATE_VERSION" ]]; then
     exit 1
   fi
   echo "   Using isolate-package version from package.json: $ISOLATE_VERSION"
+fi
+
+if [[ -z "$DETECT_MONOREPO_VERSION" ]]; then
+  DETECT_MONOREPO_VERSION=$(node -p "require('./package.json').dependencies?.['detect-monorepo'] || ''")
+  if [[ -z "$DETECT_MONOREPO_VERSION" ]]; then
+    echo "❌ --detect-monorepo-version not provided and package.json has no dependencies['detect-monorepo']"
+    exit 1
+  fi
+  echo "   Using detect-monorepo version from package.json: $DETECT_MONOREPO_VERSION"
 fi
 
 # ---------------------------------------------------------------------------
@@ -177,7 +191,6 @@ echo "🔀 Merging $TARGET_VERSION into ${BRANCH_NAME}…"
 # the merge, we take the upstream version and re-apply our changes cleanly
 # via the apply script. Only list files that the apply script actually patches.
 ISOLATE_FILES=(
-  "src/firebaseConfig.ts"
   "src/deploy/functions/prepareFunctionsUpload.ts"
   "src/deploy/functions/prepare.ts"
   "package.json"
@@ -222,7 +235,7 @@ if ! git merge "$TARGET_VERSION" -X theirs --no-edit -m "Merge upstream $TARGET_
     echo "$STILL_CONFLICTED"
     echo ""
     echo "Please resolve these manually, then run:"
-    echo "  node scripts/sync/apply-isolate-changes.mjs --version $VERSION_NUMBER --isolate-version '$ISOLATE_VERSION'"
+    echo "  node scripts/sync/apply-isolate-changes.mjs --version $VERSION_NUMBER --isolate-version '$ISOLATE_VERSION' --detect-monorepo-version '$DETECT_MONOREPO_VERSION'"
     echo "  npm install"
     echo "  npm run build"
     echo "  git add -A && git commit"
@@ -239,7 +252,6 @@ echo "   Merge complete."
 # fork's import order differs from upstream. The apply script will re-add
 # the isolate changes cleanly on top.
 ISOLATE_SOURCE_FILES=(
-  "src/firebaseConfig.ts"
   "src/deploy/functions/prepareFunctionsUpload.ts"
   "src/deploy/functions/prepare.ts"
 )
@@ -291,7 +303,8 @@ echo "🔧 Applying isolate-package integration…"
 
 node "$SCRIPT_DIR/apply-isolate-changes.mjs" \
   --version "$VERSION_NUMBER" \
-  --isolate-version "$ISOLATE_VERSION"
+  --isolate-version "$ISOLATE_VERSION" \
+  --detect-monorepo-version "$DETECT_MONOREPO_VERSION"
 
 # ---------------------------------------------------------------------------
 # Step 7: Install dependencies

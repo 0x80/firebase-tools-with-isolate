@@ -1,8 +1,8 @@
 # Firebase CLI with monorepo support
 
-This is a fork of [firebase-tools](https://github.com/firebase/firebase-tools) that integrates [isolate-package](https://github.com/0x80/isolate-package/) into the functions `deploy` command to [support monorepo setups](https://thijs-koerselman.medium.com/deploy-to-firebase-without-the-hacks-e685de39025e).
+This is a fork of [firebase-tools](https://github.com/firebase/firebase-tools) that integrates [isolate-package](https://github.com/0x80/isolate-package/) into the functions `deploy` command to [support monorepo setups](https://thijs-koerselman.medium.com/deploy-to-firebase-without-the-hacks-e685de39025e). Whether to run isolation is decided by [detect-monorepo](https://github.com/0x80/detect-monorepo), so standalone projects are untouched.
 
-The integration is minimal — roughly 50 lines of code across 4 files — and does not affect any existing functionality. The `isolate` step is entirely opt-in via a flag in your `firebase.json`.
+The integration is minimal — roughly 50 lines of code across 3 files — and does not affect any existing functionality. Isolation runs **automatically** whenever your functions source directory sits inside a detected monorepo (pnpm / npm / yarn / bun workspaces, or Rush). Standalone projects are left untouched and behave exactly like upstream.
 
 ## Installation
 
@@ -28,15 +28,14 @@ In package.json scripts, `npx` is not required — scripts already prefer locall
 
 ## Configuration
 
-Opt in to isolate-package by setting `isolate: true` in your `firebase.json`:
+No configuration is required. When you run `firebase deploy`, the fork calls `detectMonorepo` from `detect-monorepo` on the functions source directory. If a workspace root is found (pnpm-workspace.yaml, a parent `package.json` with a `workspaces` field, or `rush.json`), isolation runs automatically. Otherwise the deploy proceeds exactly as in upstream firebase-tools.
 
 ```json
 {
   "functions": {
     "source": ".",
     "runtime": "nodejs22",
-    "predeploy": ["turbo build"],
-    "isolate": true
+    "predeploy": ["turbo build"]
   }
 }
 ```
@@ -50,15 +49,13 @@ For a monorepo with multiple function packages, place `firebase.json` at the roo
       "source": "services/api",
       "predeploy": ["pnpm build:api"],
       "runtime": "nodejs22",
-      "codebase": "api",
-      "isolate": true
+      "codebase": "api"
     },
     {
       "source": "services/fns",
       "predeploy": ["pnpm build:fns"],
       "runtime": "nodejs22",
-      "codebase": "fns",
-      "isolate": true
+      "codebase": "fns"
     }
   ]
 }
@@ -70,11 +67,11 @@ For a complete working example of a modern monorepo setup, check out [mono-ts](h
 
 ## How this fork stays in sync
 
-Fork versions match upstream firebase-tools versions (e.g. `15.13.0-0` corresponds to upstream `v15.13.0`). The fork is kept in sync using automated tooling:
+Fork versions match upstream firebase-tools versions (e.g. `15.13.0` corresponds to upstream `v15.13.0`). The fork is kept in sync using automated tooling:
 
 ### Scripts (`scripts/sync/`)
 
-- **`apply-isolate-changes.mjs`** — Applies the isolate integration on top of any clean upstream release. Patches exactly 4 source files and `package.json`, using anchor-based string matching verified to be stable across upstream releases from v15.4.0 through v15.13.0.
+- **`apply-isolate-changes.mjs`** — Applies the isolate integration on top of any clean upstream release. Patches 2 source files plus `package.json` and the README, using anchor-based string matching verified to be stable across upstream releases from v15.4.0 through v15.13.0.
 
 - **`sync-upstream.sh`** — Orchestrates the full sync: fetches upstream, merges a release tag, re-applies the isolate changes, installs dependencies, and verifies the build compiles.
 
@@ -95,17 +92,20 @@ The sync can also be triggered manually:
 
 All workflows use Node 24 and npm OIDC trusted publishing (provenance).
 
-- **[`sync-upstream.yml`](.github/workflows/sync-upstream.yml)** — Runs daily (09:00 UTC) and on manual dispatch. Checks for new upstream firebase-tools releases and opens a PR with the synced result. Can target a specific version.
+- **[`sync-upstream.yml`](.github/workflows/sync-upstream.yml)** — Runs daily (09:00 UTC) and on manual dispatch. Checks for new upstream firebase-tools releases, merges to main, and triggers the publish workflow automatically. Can target a specific version.
 
-- **[`update-isolate.yml`](.github/workflows/update-isolate.yml)** — Updates the `isolate-package` dependency to a given version, bumps the fork's pre-release number (e.g. `15.13.0-0` → `15.13.0-1`), and opens a PR targeting `main`. Follow up with the publish workflow to release to npm. Follow up with the publish workflow to release to npm.
+- **[`update-isolate.yml`](.github/workflows/update-isolate.yml)** — Updates the `isolate-package` dependency to a given version, bumps the fork's pre-release number (e.g. `15.13.0` → `15.13.0-1`), and opens a PR targeting `main`. Follow up with the publish workflow to release to npm.
 
-- **[`publish.yml`](.github/workflows/publish.yml)** — Publishes the fork to npm. Choose `next` for pre-release testing or `latest` to promote a stable release (which strips the pre-release suffix, e.g. `15.13.0-0` → `15.13.0`). Creates a git tag and GitHub release.
+- **[`publish.yml`](.github/workflows/publish.yml)** — Publishes the fork to npm. Called automatically by the sync workflow, or can be triggered manually. Creates a git tag and GitHub release.
 
 ### Versioning
 
-- Sync creates version `X.Y.Z-0` matching upstream `vX.Y.Z`
-- Each isolate-package update bumps the suffix: `-0` → `-1` → `-2`
-- Publishing to `latest` strips the suffix: `X.Y.Z-0` → `X.Y.Z`
+- The daily sync automatically publishes version `X.Y.Z` matching upstream `vX.Y.Z`
+- Isolate-package updates use pre-release versions (`X.Y.Z-1`, `X.Y.Z-2`, ...) published under the `next` dist-tag
+
+## Issues
+
+Issues on this repository are disabled. For problems with the isolation step itself, submit them at [isolate-package](https://github.com/0x80/isolate-package/issues). For problems with how the fork decides whether a project is a monorepo, submit them at [detect-monorepo](https://github.com/0x80/detect-monorepo/issues). For anything unrelated to the isolate integration, refer to the upstream [firebase-tools](https://github.com/firebase/firebase-tools/issues).
 
 ## Documentation
 

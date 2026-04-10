@@ -30,8 +30,13 @@ import {
   groupEndpointsByCodebase,
   targetCodebases,
 } from "./functionsDeployHelper";
-import { logLabeledBullet } from "../../utils";
-import { getFunctionsConfig, prepareFunctionsUpload, runIsolate } from "./prepareFunctionsUpload";
+import { logLabeledBullet, logLabeledWarning } from "../../utils";
+import {
+  getFunctionsConfig,
+  isMonorepoSource,
+  prepareFunctionsUpload,
+  runIsolate,
+} from "./prepareFunctionsUpload";
 import { promptForFailurePolicies, promptForMinInstances } from "./prompts";
 import { needProjectId, needProjectNumber } from "../../projectUtils";
 import { logger } from "../../logger";
@@ -224,7 +229,14 @@ export async function prepare(
       );
     }
 
-    if (localCfg.isolate === true) {
+    if ((localCfg as { isolate?: boolean }).isolate === true) {
+      logLabeledWarning(
+        "functions",
+        "The 'isolate' flag in firebase.json is deprecated and no longer needed — monorepo detection is now automatic. Please remove 'isolate' from your functions config.",
+      );
+    }
+
+    if (isMonorepoSource(sourceDir)) {
       sourceDir = await runIsolate(sourceDirName);
     }
 
