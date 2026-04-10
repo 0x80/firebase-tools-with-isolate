@@ -10,7 +10,7 @@ set -euo pipefail
 # Options:
 #   --target, -t VERSION    Upstream version to sync to (e.g. v15.13.0).
 #                           Defaults to the latest upstream release tag.
-#   --isolate-version, -i   isolate-package version (default: ^1.27.0-4)
+#   --isolate-version, -i   isolate-package version (default: current value in package.json)
 #   --branch, -b NAME       Branch name to create. Defaults to auto-generated.
 #   --no-push               Don't push the branch (for local testing).
 #   --no-build              Skip the build verification step.
@@ -30,7 +30,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Defaults
 TARGET_VERSION=""
-ISOLATE_VERSION="^1.27.0-4"
+ISOLATE_VERSION=""
 BRANCH_NAME=""
 PUSH=true
 BUILD=true
@@ -51,7 +51,7 @@ Usage:
 Options:
   --target, -t VERSION    Upstream version to sync to (e.g. v15.13.0).
                           Defaults to the latest upstream release tag.
-  --isolate-version, -i   isolate-package version (default: ^1.27.0-4)
+  --isolate-version, -i   isolate-package version (default: current value in package.json)
   --branch, -b NAME       Branch name to create. Defaults to auto-generated.
   --no-push               Don't push the branch (for local testing).
   --no-build              Skip the build verification step.
@@ -64,6 +64,21 @@ HELP
 done
 
 cd "$ROOT_DIR"
+
+# If no --isolate-version was provided, preserve the current value from
+# package.json. This MUST happen before the upstream merge: the merge uses
+# -X theirs and replaces package.json with upstream's copy, which has no
+# isolate-package key at all — so reading it later would come up empty.
+# The `|| ''` in the node expression is load-bearing: without it, a missing
+# key would print the literal text "undefined" and silently pass the check.
+if [[ -z "$ISOLATE_VERSION" ]]; then
+  ISOLATE_VERSION=$(node -p "require('./package.json').dependencies?.['isolate-package'] || ''")
+  if [[ -z "$ISOLATE_VERSION" ]]; then
+    echo "❌ --isolate-version not provided and package.json has no dependencies['isolate-package']"
+    exit 1
+  fi
+  echo "   Using isolate-package version from package.json: $ISOLATE_VERSION"
+fi
 
 # ---------------------------------------------------------------------------
 # Step 1: Fetch upstream
