@@ -128,33 +128,4 @@ jobs:
         if: ${{ inputs.dry_run == false }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          # Dispatch publish.yml, then find the newly-created run and watch
-          # it so update-isolate fails end-to-end if publish does. The
-          # publish concurrency group ensures at most one run in flight, so
-          # the next run on main after our dispatch timestamp is ours.
-          DISPATCHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          gh workflow run publish.yml --ref main -f dist_tag=next
-
-          RUN_ID=""
-          for _ in 1 2 3 4 5 6; do
-            sleep 3
-            RUN_ID=$(gh run list --workflow=publish.yml --branch=main --limit=5 \
-              --json databaseId,createdAt \
-              --jq "[.[] | select(.createdAt >= \"$DISPATCHED_AT\")] | sort_by(.createdAt) | .[0].databaseId" \
-              2>/dev/null || true)
-            [[ -n "$RUN_ID" ]] && break
-          done
-
-          if [[ -z "$RUN_ID" ]]; then
-            echo "::error::Dispatched publish.yml but could not locate the new run after 18s."
-            echo "Check https://github.com/${GITHUB_REPOSITORY}/actions/workflows/publish.yml"
-            exit 1
-          fi
-
-          RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}"
-          echo "Watching publish run: $RUN_URL"
-          echo "- **Publish run:** [${RUN_ID}](${RUN_URL})" >> "$GITHUB_STEP_SUMMARY"
-
-          gh run watch "$RUN_ID" --exit-status
+        run: gh workflow run publish.yml --ref main -f dist_tag=next
