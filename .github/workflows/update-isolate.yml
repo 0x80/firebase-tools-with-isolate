@@ -1,10 +1,18 @@
 name: Update isolate-package
 
 # Updates the isolate-package dependency to a new version, bumps the fork's
-# pre-release number, pushes to main, and publishes to npm as the 'next' tag.
+# pre-release number, pushes to main, and triggers the Publish workflow
+# to release the update to npm as the 'next' tag.
 #
 # Use this when you've published a pre-release of isolate-package and want to
 # test it within the firebase-tools-with-isolate fork.
+#
+# The Publish workflow is triggered as a fresh workflow_dispatch rather than
+# chained via workflow_call. npm's trusted publishing validates the OIDC
+# token against the *calling* workflow's filename, not the reusable one, so
+# a workflow_call from here would be rejected (404) by the trusted publisher
+# configured for publish.yml. Dispatching gives publish.yml its own OIDC
+# context where workflow_ref matches the trust config.
 
 on:
   workflow_dispatch:
@@ -19,9 +27,6 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
-
 concurrency:
   group: update-isolate
   cancel-in-progress: false
@@ -30,8 +35,9 @@ jobs:
   update:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    outputs:
-      ready: ${{ steps.result.outputs.ready }}
+    permissions:
+      contents: write
+      actions: write
 
     steps:
       - uses: actions/checkout@v4
@@ -118,17 +124,8 @@ jobs:
         if: ${{ inputs.dry_run == false }}
         run: git push origin main
 
-      - name: Set ready flag
-        id: result
+      - name: Trigger publish workflow
         if: ${{ inputs.dry_run == false }}
-        run: echo "ready=true" >> "$GITHUB_OUTPUT"
-
-  publish:
-    needs: update
-    if: needs.update.outputs.ready == 'true'
-    uses: ./.github/workflows/publish.yml
-    with:
-      dist_tag: next
-    permissions:
-      contents: write
-      id-token: write
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run publish.yml --ref main -f dist_tag=next
