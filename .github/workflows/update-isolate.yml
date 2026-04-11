@@ -88,9 +88,14 @@ jobs:
           ISOLATE_VERSION: ${{ steps.isolate.outputs.version }}
         run: |
           # Stage changes from npm pkg set + npm install so npm version
-          # doesn't fail on a dirty working directory
+          # doesn't fail on a dirty working directory. If the dependency
+          # was already at the requested version (e.g. when re-running to
+          # recover from a failed publish), skip this commit — we still
+          # want the pre-release bump below.
           git add package.json npm-shrinkwrap.json
-          git commit -m "Update isolate-package to ${ISOLATE_VERSION}"
+          if ! git diff --cached --quiet; then
+            git commit -m "Update isolate-package to ${ISOLATE_VERSION}"
+          fi
 
           # If the version has no prerelease suffix (e.g. after publishing to
           # "latest" which strips it), restore the "-0" suffix first. Without
