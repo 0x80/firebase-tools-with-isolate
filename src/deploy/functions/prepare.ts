@@ -32,7 +32,12 @@ import {
 } from "./functionsDeployHelper";
 import { logLabeledBullet, logLabeledWarning } from "../../utils";
 import { isDartEndpoint, classifyNonProductionEndpoints } from "./runtimes/dart/triggerSupport";
-import { getFunctionsConfig, prepareFunctionsUpload } from "./prepareFunctionsUpload";
+import {
+  getFunctionsConfig,
+  isMonorepoSource,
+  prepareFunctionsUpload,
+  runIsolate,
+} from "./prepareFunctionsUpload";
 import { promptForFailurePolicies, promptForMinInstances } from "./prompts";
 import { needProjectId, needProjectNumber } from "../../projectUtils";
 import { logger } from "../../logger";
