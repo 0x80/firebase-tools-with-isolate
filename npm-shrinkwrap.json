@@ -46,7 +46,7 @@
         "glob": "^10.5.0",
         "google-auth-library": "^9.11.0",
         "ignore": "^7.0.4",
-        "isolate-package": "1.31.0",
+        "isolate-package": "1.29.0-4",
         "js-yaml": "^3.14.2",
         "jsonwebtoken": "^9.0.2",
         "leven": "^3.1.0",
@@ -15558,9 +15558,9 @@
       "integrity": "sha1-6PvzdNxVb/iUehDcsFctYz8s+hA="
     },
     "node_modules/isolate-package": {
-      "version": "1.31.0",
-      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.31.0.tgz",
-      "integrity": "sha512-deRqi2oKPn8Cted8lnAU2lRaxR/g2tNknjDd+RQ61B+S0SZtahmFugh3nG8w9DdQ63RDijYCxzVr+OGlKxOjRw==",
+      "version": "1.29.0-4",
+      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.29.0-4.tgz",
+      "integrity": "sha512-sTtEHC2w93sWJMr0l+gy2o8BdhJWlJHsy5r8m6U5rQ69UTeq1cEA5nj2f7q84gzpeipViyVc2w0CyPdE3IvbkA==",
       "license": "MIT",
       "dependencies": {
         "@npmcli/arborist": "^9.4.2",
@@ -15568,7 +15568,6 @@
         "@pnpm/logger": "^1001.0.1",
         "@pnpm/types": "^1001.3.0",
         "consola": "^3.4.2",
-        "detect-monorepo": "^1.0.0",
         "fs-extra": "^11.3.4",
         "get-or-throw": "^3.0.1",
         "get-tsconfig": "^4.13.7",
@@ -25047,22 +25046,6 @@
       },
       "funding": {
         "url": "https://github.com/sponsors/isaacs"
-      }
-    },
-    "node_modules/tuf-js/node_modules/minimatch/node_modules/balanced-match": {
-      "version": "1.0.2",
-      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
-      "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==",
-      "license": "MIT"
-    },
-    "node_modules/tuf-js/node_modules/minimatch/node_modules/brace-expansion": {
-      "version": "1.1.14",
-      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.14.tgz",
-      "integrity": "sha512-MWPGfDxnyzKU7rNOW9SP/c50vi3xrmrua/+6hfPbCS2ABNWfx24vPidzvC7krjU/RTo235sV776ymlsMtGKj8g==",
-      "license": "MIT",
-      "dependencies": {
-        "balanced-match": "^1.0.0",
-        "concat-map": "0.0.1"
       }
     },
     "node_modules/tuf-js/node_modules/minipass": {
@@ -37655,16 +37638,15 @@
       "integrity": "sha1-6PvzdNxVb/iUehDcsFctYz8s+hA="
     },
     "isolate-package": {
-      "version": "1.31.0",
-      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.31.0.tgz",
-      "integrity": "sha512-deRqi2oKPn8Cted8lnAU2lRaxR/g2tNknjDd+RQ61B+S0SZtahmFugh3nG8w9DdQ63RDijYCxzVr+OGlKxOjRw==",
+      "version": "1.29.0-4",
+      "resolved": "https://registry.npmjs.org/isolate-package/-/isolate-package-1.29.0-4.tgz",
+      "integrity": "sha512-sTtEHC2w93sWJMr0l+gy2o8BdhJWlJHsy5r8m6U5rQ69UTeq1cEA5nj2f7q84gzpeipViyVc2w0CyPdE3IvbkA==",
       "requires": {
         "@npmcli/arborist": "^9.4.2",
         "@npmcli/config": "^10.8.1",
         "@pnpm/logger": "^1001.0.1",
         "@pnpm/types": "^1001.3.0",
         "consola": "^3.4.2",
-        "detect-monorepo": "^1.0.0",
         "fs-extra": "^11.3.4",
         "get-or-throw": "^3.0.1",
         "get-tsconfig": "^4.13.7",
@@ -44441,22 +44423,6 @@
           "integrity": "sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==",
           "requires": {
             "brace-expansion": "^1.1.14"
-          },
-          "dependencies": {
-            "balanced-match": {
-              "version": "1.0.2",
-              "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
-              "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="
-            },
-            "brace-expansion": {
-              "version": "1.1.14",
-              "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.14.tgz",
-              "integrity": "sha512-MWPGfDxnyzKU7rNOW9SP/c50vi3xrmrua/+6hfPbCS2ABNWfx24vPidzvC7krjU/RTo235sV776ymlsMtGKj8g==",
-              "requires": {
-                "balanced-match": "^1.0.0",
-                "concat-map": "0.0.1"
-              }
-            }
           }
         },
         "minipass": {
