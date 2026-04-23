@@ -191,9 +191,16 @@ export async function prepareFunctionsUpload(
  * Check whether the given absolute source directory sits inside a monorepo
  * workspace (pnpm, npm/yarn/bun workspaces, or Rush). Used as a cheap gate
  * before invoking isolate-package.
+ *
+ * Uses detect-monorepo's default upward walk depth. Set
+ * FIREBASE_TOOLS_ISOLATE_MONOREPO_MAX_DEPTH to a positive integer (or
+ * Infinity) to raise the cap when the functions source is nested deeper than
+ * the default.
  */
 export function isMonorepoSource(absoluteSourceDir: string): boolean {
-  return detectMonorepo(absoluteSourceDir) !== null;
+  const override = process.env.FIREBASE_TOOLS_ISOLATE_MONOREPO_MAX_DEPTH;
+  const options = override ? { maxDepth: Number(override) } : undefined;
+  return detectMonorepo(absoluteSourceDir, options) !== null;
 }
 
 /**
