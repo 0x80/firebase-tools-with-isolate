@@ -30,6 +30,12 @@ In package.json scripts, `npx` is not required — scripts already prefer locall
 
 No configuration is required. When you run `firebase deploy`, the fork calls `detectMonorepo` from `detect-monorepo` on the functions source directory. If a workspace root is found (pnpm-workspace.yaml, a parent `package.json` with a `workspaces` field, or `rush.json`), isolation runs automatically. Otherwise the deploy proceeds exactly as in upstream firebase-tools.
 
+`detect-monorepo` walks up from the functions source with a default depth cap. If your functions source is nested deeper than that default and the workspace root isn't being found, set `FIREBASE_TOOLS_ISOLATE_MONOREPO_MAX_DEPTH` to a positive integer (or `Infinity`) to raise the cap:
+
+```bash
+FIREBASE_TOOLS_ISOLATE_MONOREPO_MAX_DEPTH=20 npx firebase deploy
+```
+
 ```json
 {
   "functions": {
