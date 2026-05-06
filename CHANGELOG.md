@@ -5,3 +5,5 @@
   - Fix emulator crash when using `uuidv4()` on operations.
   - Support for `_Data` input types as variables with `@allow(fields, maxCount)` to constraint the input JSON, enabling batch mutations in admin SDK. Client SDK support will come soon.
 - Increase supported range for Next.js to version 16.0 (#9463)
+- Updated Cloud Function default resource locations. This does not affect existing functions. (#10414)
+- Added warning for cross-region event triggers (#10408)
