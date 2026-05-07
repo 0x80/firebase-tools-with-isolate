@@ -1,11 +1,9 @@
-- Updated Firestore Emulator to v1.21.0, which adds support for subqueries and new stages like let(...), as well as allowing setting database-edition per-database.
-- Suppressed the 'punycode' deprecation warning during `firebase deploy` on Node 22. (#10385)
-- Fixed an issue where hosting deploy allowed publishing to a site in a different project. (#10376)
-- Added 'firebase_deploy' and 'firebase_deploy_status' MCP tools.
-- Added SSE mode support to `firebase mcp`. To use it, run `firebase mcp --mode=sse --port=3000`, and connect your client on `http://localhost:3000`.
-- Update the valid Python runtimes for functions. Default Python runtime is now Python 3.14.
-- Fix CLI non-interactive mode for dataconnect init (#10401)
-- Fixed issue where rules for non-default Firestore databases were not being deployed correctly.
-- Suppress SSR warning for non-SSR Angular projects on init hosting (#10364)
-- Updated the SQL Connect emulator to v3.4.6, including internal bug fixes (#10434)
-- Fix an issue where deploying multi-codebase functions failed due to a shared source token scraper (#10428)
+- Added support for creating search indexes for Firestore. (#10431)
+- Fixed an issue where some MCP tools would error with "Invalid input: expected record, received array". (#10437)
+- Fixed an issue causing errors when multiple Firestore databases were configured in `firebase.json` (#8114)
+- Updated the Firebase Data Connect local toolkit to v3.4.7, which includes the following changes: (#10461)
+  - Fix emulator crash when using `uuidv4()` on operations.
+  - Support for `_Data` input types as variables with `@allow(fields, maxCount)` to constraint the input JSON, enabling batch mutations in admin SDK. Client SDK support will come soon.
+- Increase supported range for Next.js to version 16.0 (#9463)
+- Updated Cloud Function default resource locations. This does not affect existing functions. (#10414)
+- Added warning for cross-region event triggers (#10408)
