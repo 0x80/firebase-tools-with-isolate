@@ -1,7 +1,7 @@
 {
-  "name": "firebase-tools-with-isolate",
-  "version": "15.17.0",
-  "description": "Command-Line Interface for Firebase with monorepo support",
+  "name": "firebase-tools",
+  "version": "15.18.0",
+  "description": "Command-Line Interface for Firebase",
   "main": "./lib/index.js",
   "mcpName": "io.github.firebase/firebase-mcp",
   "bin": {
@@ -25,7 +25,7 @@
     "lint:quiet": "npm run lint:ts -- --quiet && npm run lint:other",
     "lint:ts": "eslint --cache --config .eslintrc.js --ext .ts,.js .",
     "mocha:fast": "mocha 'src/**/*.spec.{ts,js}'",
-    "mocha": "nyc --reporter=html mocha 'src/**/*.spec.{ts,js}'",
+    "mocha": "nyc mocha 'src/**/*.spec.{ts,js}'",
     "prepare": "npm run clean && npm run build:publish",
     "test": "npm run lint:quiet && npm run test:compile && npm run mocha",
     "test:appdistribution": "npm run lint:quiet && npm run test:compile && nyc mocha 'src/appdistribution/*.spec.{ts,js}'",
@@ -90,7 +90,8 @@
     ],
     "reporter": [
       "lcovonly",
-      "text"
+      "text",
+      "html"
     ],
     "report-dir": "./.coverage",
     "extension": [
@@ -104,7 +105,6 @@
     ]
   },
   "dependencies": {
-    "@apphosting/build": "^0.1.7",
     "@apphosting/common": "^0.0.8",
     "@electric-sql/pglite": "^0.3.3",
     "@electric-sql/pglite-tools": "^0.2.8",

@@ -1,9 +1,9 @@
-- Added support for creating search indexes for Firestore. (#10431)
-- Fixed an issue where some MCP tools would error with "Invalid input: expected record, received array". (#10437)
-- Fixed an issue causing errors when multiple Firestore databases were configured in `firebase.json` (#8114)
-- Updated the Firebase Data Connect local toolkit to v3.4.7, which includes the following changes: (#10461)
-  - Fix emulator crash when using `uuidv4()` on operations.
-  - Support for `_Data` input types as variables with `@allow(fields, maxCount)` to constraint the input JSON, enabling batch mutations in admin SDK. Client SDK support will come soon.
-- Increase supported range for Next.js to version 16.0 (#9463)
-- Updated Cloud Function default resource locations. This does not affect existing functions. (#10414)
-- Added warning for cross-region event triggers (#10408)
+- Updated Pub/Sub emulator to version 0.8.31
+- Resolves undefined regions earlier, during the build to backend resolution phase (#10471)
+- Updated the Firebase Data Connect local toolkit to v3.4.8, which includes the following changes:
+  - Fixed an issue in Dart code generation where nullable BigInt was not handled correctly.
+  - Added support for nested 1:Many relational batch mutations.
+  - Updated the Golang dependency version to 1.25.10.
+- Default timeout for Dart functions is now 60 seconds when not explicitly set (#10501)
+- Support secret environment variables for Cloud Run functions (#10489)
+- Set requiredProjectBindings in AI Logic services (#10503)
