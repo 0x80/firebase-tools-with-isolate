@@ -1,9 +1,7 @@
-- Updated Pub/Sub emulator to version 0.8.31
-- Resolves undefined regions earlier, during the build to backend resolution phase (#10471)
-- Updated the Firebase Data Connect local toolkit to v3.4.8, which includes the following changes:
-  - Fixed an issue in Dart code generation where nullable BigInt was not handled correctly.
-  - Added support for nested 1:Many relational batch mutations.
-  - Updated the Golang dependency version to 1.25.10.
-- Default timeout for Dart functions is now 60 seconds when not explicitly set (#10501)
-- Support secret environment variables for Cloud Run functions (#10489)
-- Set requiredProjectBindings in AI Logic services (#10503)
+- Updated Pub/Sub emulator to version 0.8.32
+- Added support for 6 more iD providers in `auth:import` and `auth:export` commands
+- Fixed issue where `auth:export` didn't escape double quotes for CSV format. (#3484)
+- Fixes `CloudSQLConnectorError: The connector was closed` unhandled exception during Data Connect deployments. (#10555)
+- Updated the Firebase Data Connect local toolkit to v3.4.9, which includes the following changes: (#10567)
+  - Added support for nested mutations for literals and also variables that define an incomplete set of fields.
+  - Fixed an issue in the JS Generated SDK where `QueryFetchPolicy` wasn't being respected.
