@@ -1,12 +1,12 @@
 {
-  "name": "firebase-tools",
-  "version": "15.19.0",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.19.0-0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "firebase-tools",
-      "version": "15.19.0",
+      "name": "firebase-tools-with-isolate",
+      "version": "15.19.0-0",
       "license": "MIT",
       "dependencies": {
         "@apphosting/common": "^0.0.8",
@@ -23482,6 +23482,16 @@
       "integrity": "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==",
       "dev": true,
       "optional": true
+    },
+    "node_modules/teex": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/teex/-/teex-1.0.1.tgz",
+      "integrity": "sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==",
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "streamx": "^2.12.5"
+      }
     },
     "node_modules/term-size": {
       "version": "2.2.0",
