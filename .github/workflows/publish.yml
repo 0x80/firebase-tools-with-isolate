@@ -3,10 +3,10 @@ name: Publish
 # Publishes the fork to npm using OIDC trusted publishing (provenance).
 # Requires Node.js 24+ and npm OIDC trust configured for this repository.
 #
-# Called automatically by the sync-upstream workflow after a successful sync,
-# or can be triggered manually. Choose "next" to publish the pre-release
-# version (e.g. 15.13.0-0), or "latest" to strip the pre-release suffix
-# and publish stable (e.g. 15.13.0).
+# Dispatched (via workflow_dispatch) by the sync-upstream workflow after a
+# successful sync, or can be triggered manually. Choose "next" to publish the
+# pre-release version (e.g. 15.13.0-0), or "latest" to strip the pre-release
+# suffix and publish stable (e.g. 15.13.0).
 
 on:
   workflow_dispatch:
