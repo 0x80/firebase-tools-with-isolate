@@ -114,9 +114,10 @@ jobs:
       # Dispatched as a separate workflow_dispatch (not workflow_call) so the
       # OIDC token claims match the npm trusted publisher entry for publish.yml.
       # Reusable workflow invocations produce a different workflow_ref claim
-      # and are rejected by npm trusted publishing.
+      # and are rejected by npm trusted publishing. --repo pins the dispatch to
+      # the fork; without it gh resolves to the upstream remote and 404s.
       - name: Trigger publish workflow
         if: steps.check.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run publish.yml --ref main -f dist_tag=latest
+        run: gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref main -f dist_tag=latest
