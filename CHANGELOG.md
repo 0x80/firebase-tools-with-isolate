@@ -1,9 +1,7 @@
-- Added Enterprise Edition support to the Firestore emulator. Configure it by setting `firebase.json#firestore.edition` or `firebase.json#emulators.firestore.edition`.
-- Fixed an issue where functions deployments would silently fail (#6989)
-- Fixed issue where the CLI isn't able to correctly parse command arguments on PowerShell (#7506)
-- Add support for Next.js 16 middleware (`proxy.ts`/`proxy.js`) (#9631)
-- Updates the default region for new App Hosting backends to us-east4 (#10271)
-- Fix Next.js image optimization detection in client components (#10228)
-- Updates Firebase Data Connect emulator to v3.4.1 (#10290)
-  - Upgraded Go runtime to 1.25.9.
-  - Bug fix: Fixed an issue that caused Angular SDK generation to fail.
+- Updated Pub/Sub emulator to version 0.8.32
+- Added support for 6 more iD providers in `auth:import` and `auth:export` commands
+- Fixed issue where `auth:export` didn't escape double quotes for CSV format. (#3484)
+- Fixes `CloudSQLConnectorError: The connector was closed` unhandled exception during Data Connect deployments. (#10555)
+- Updated the Firebase Data Connect local toolkit to v3.4.9, which includes the following changes: (#10567)
+  - Added support for nested mutations for literals and also variables that define an incomplete set of fields.
+  - Fixed an issue in the JS Generated SDK where `QueryFetchPolicy` wasn't being respected.
