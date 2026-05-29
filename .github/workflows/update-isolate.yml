@@ -133,4 +133,4 @@ jobs:
         if: ${{ inputs.dry_run == false }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run publish.yml --ref main -f dist_tag=next
+        run: gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref main -f dist_tag=next

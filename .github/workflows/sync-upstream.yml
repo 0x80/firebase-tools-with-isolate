@@ -25,7 +25,7 @@ on:
 
 permissions:
   contents: write
-  id-token: write
+  actions: write
 
 concurrency:
   group: sync-upstream
@@ -35,8 +35,6 @@ jobs:
   sync:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    outputs:
-      synced: ${{ steps.result.outputs.synced }}
 
     steps:
       - name: Checkout fork
@@ -113,17 +111,13 @@ jobs:
         if: steps.check.outputs.skip != 'true'
         run: git push origin main
 
-      - name: Set sync result
-        id: result
+      # Dispatched as a separate workflow_dispatch (not workflow_call) so the
+      # OIDC token claims match the npm trusted publisher entry for publish.yml.
+      # Reusable workflow invocations produce a different workflow_ref claim
+      # and are rejected by npm trusted publishing. --repo pins the dispatch to
+      # the fork; without it gh resolves to the upstream remote and 404s.
+      - name: Trigger publish workflow
         if: steps.check.outputs.skip != 'true'
-        run: echo "synced=true" >> "$GITHUB_OUTPUT"
-
-  publish:
-    needs: sync
-    if: needs.sync.outputs.synced == 'true'
-    uses: ./.github/workflows/publish.yml
-    with:
-      dist_tag: latest
-    permissions:
-      contents: write
-      id-token: write
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref main -f dist_tag=latest
