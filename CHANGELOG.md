@@ -1,3 +1,3 @@
-- Updated Firebase SQL Connect genAI features to use new Agent Service API
-- Updated the Firebase Data Connect local toolkit to v3.4.10, which includes the following changes:
-  - Extended client cache consistency validation to include conflicts with schema field names.
+- Removed the prompt and backend deletion of Data Connect services during `firebase deploy`. (#10619)
+- Fixes `firebase init dataconnect` failing with `ENOEXEC` when creating a new template app on some operating systems. (#10616)
+- Support setting the Google Cloud Storage (GCS) test results bucket in `apptesting:execute` and `appdistribution:distribute`
