@@ -1,7 +1,7 @@
 {
-  "name": "firebase-tools",
-  "version": "15.21.0",
-  "description": "Command-Line Interface for Firebase",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.21.0-0",
+  "description": "Command-Line Interface for Firebase with monorepo support",
   "main": "./lib/index.js",
   "mcpName": "io.github.firebase/firebase-mcp",
   "bin": {
@@ -175,7 +175,8 @@
     "ws": "^7.5.10",
     "yaml": "^2.8.3",
     "zod": "^3.24.3",
-    "zod-to-json-schema": "^3.24.5"
+    "zod-to-json-schema": "^3.24.5",
+    "detect-monorepo": "^1.2.0"
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.1402.2",
