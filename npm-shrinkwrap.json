@@ -1,12 +1,12 @@
 {
-  "name": "firebase-tools",
-  "version": "15.22.0",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.22.0-0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "firebase-tools",
-      "version": "15.22.0",
+      "name": "firebase-tools-with-isolate",
+      "version": "15.22.0-0",
       "license": "MIT",
       "dependencies": {
         "@apphosting/common": "^0.0.8",
@@ -43,6 +43,7 @@
         "glob": "^10.5.0",
         "google-auth-library": "^9.11.0",
         "ignore": "^7.0.4",
+        "isolate-package": "1.35.0",
         "js-yaml": "^4.2.0",
         "jsonwebtoken": "^9.0.2",
         "libsodium-wrappers": "^0.7.10",
