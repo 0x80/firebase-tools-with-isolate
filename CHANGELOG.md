@@ -1,5 +1,2 @@
-- Added `apphosting:secrets:revokeaccess` command. (#10669)
-- Updated Pub/Sub emulator to version 0.8.33.
-- Updated Data Connect emulator to version 3.4.12.
-- Fix Data Connect non-deterministic output order of generated SDK files when compiled from multiple GQL source files.
-- Optimize Data Connect singular relation filters on PKs to avoid EXISTS subqueries.
+- Fixed various issues with Data Connect emulator / deploy by updating binary to version 3.4.13.
+- Temporarily pinned firebase-docker-image to Node 24.16.0 to mitigate https://github.com/nodejs/node/issues/63989.
