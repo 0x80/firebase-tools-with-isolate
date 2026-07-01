@@ -1,12 +1,12 @@
 {
-  "name": "firebase-tools",
-  "version": "15.22.4",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.22.4-0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "firebase-tools",
-      "version": "15.22.4",
+      "name": "firebase-tools-with-isolate",
+      "version": "15.22.4-0",
       "license": "MIT",
       "dependencies": {
         "@apphosting/common": "^0.0.8",
