@@ -1,1 +1,2 @@
-- Disable 'keep-alive' in `google-auth-library` calls to avoid `Premature close` errors on some Node versions (#10716).
+- Fixes `auth:export` and `auth:import` dropping `mfaInfo` data for users with Multi-Factor Authentication enabled.
+- Updated Pub/Sub emulator to version 0.8.34
