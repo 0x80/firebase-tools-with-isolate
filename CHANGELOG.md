@@ -1,11 +1,10 @@
-- Add declarative security support and automated rolling IAM role grants/revocations for 2nd gen Cloud Functions
-- Fixed an issue in `apps:create` where App Store ID was always prompted for even when unnecessary.
-- Add `functions:lifecycle:list` and `functions:lifecycle:run` commands to view and run
-  lifecycle hooks in isolation.
-- Updated the Firebase SQL Connect local toolkit to v3.4.15, which supports for 1:1 nested mutations. (#10773)
+- Update Firestore emulator to v1.22.0, adding support for DML
+- Add `appcheck:debugtokens:create`, `appcheck:debugtokens:list`, and `appcheck:debugtokens:delete` CLI commands for managing App Check debug tokens (#10801).
+- Add `MCP-Protocol-Version`, `Mcp-Method`, and `Mcp-Name` HTTP headers to `OneMcpServer` requests per the MCP 0728 standard release candidate (https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/ and https://modelcontextprotocol.io/seps/2243-http-standardization).
+- Fixes Storage Emulator to support JSON uploads larger than 100KB without hanging or throwing 413 error (#8355)
+- Add `extdeprecationwarnings` experiment to display phased deprecation notices and guidance across `ext:*` CLI commands.
+- Fixes Data Connect emulator crash when in-flight GraphQL requests are cancelled (#10821)
+- Fixed a Cloud Storage emulator hang under concurrent requests, caused by the rules runtime's stdout being parsed per-chunk instead of per-line so batched responses were dropped (#6194, #6865).
 - Support for specifying that the input for a string or string[] param in Functions must be non-empty (#10678)
 - Removed the warning that Dart functions may not yet be visible in the Firebase Console, since they are now shown.
-- Fixed `dataconnect:execute` command help text. The right env var should be FIREBASE_DATA_CONNECT_EMULATOR_HOST, with an underscore between DATA and CONNECT.
-- Updated the Firebase SQL Connect local toolkit to v3.4.16, which includes the following changes:
-  - Updated the Golang dependency version to 1.25.12.
-- Fixed a Hosting emulator timeout when a web frameworks request with a body falls through to a function rewrite. (#10760)
+- Add the V1 environment variable FUNCTION_REGION to v2 functions (#10862)
