@@ -1,3 +1,10 @@
-- Fix typo that was breaking the emulator handling of secret params (issue #10866)
-- Fixes service account propagation delays during Cloud Functions deploys and cleans up newly created service accounts on 100% deployment failure (#10871).
-- Fixed `appcheck:debugtokens:list` and `appcheck:debugtokens:delete` prompting "Select the app to register a debug token for" when asking which app to operate on.
+- Automatically enable non-interactive mode when an AI agent is detected in the environment to prevent the CLI from hanging on interactive prompts.
+- Added support for a two-phase non-interactive login flow. Initiate this by running `firebase login --non-interactive`, navigate to the printed link to get an authorization code, and complete the login by running `firebase login <auth_code>`.
+- Fixed `apps:init` writing `google-services.json` to an `app/app` path when the Android module has no `src` directory, by detecting the module from the directory basename instead of the first path segment (#10863).
+- Fixed `firestore:locations` failing with a `null` project error when run without an active project (#10881).
+- Fixed authentication refresh issue under Application Default Credentials (ADC) when no project is active (#10880).
+- Added `crashlytics:onboard:web` CLI command to support Crashlytics onboarding for web apps.
+- Added `hidden` source map support to `crashlytics:sourcemap:upload`.
+- Fixed typo in loginPrototyper URL which caused issues during Firebase MCP server firebase_login
+- Added `appcheck:services:list`, `appcheck:services:get` and `appcheck:services:set` to read and change App Check enforcement per service.
+- Fixed unenforced read-only isolation for Native SQL queries for Firebase SQL Connect.

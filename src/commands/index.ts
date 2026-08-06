@@ -34,6 +34,15 @@ export function load(client: CLIClient): CLIClient {
   client.appcheck.debugtokens.create = loadCommand("appcheck-debugtokens-create");
   client.appcheck.debugtokens.list = loadCommand("appcheck-debugtokens-list");
   client.appcheck.debugtokens.delete = loadCommand("appcheck-debugtokens-delete");
+  // Enforcement is gated until the surface is API council approved, since the
+  // shape could still change. The debug token commands above already shipped
+  // and stay generally available.
+  if (experiments.isEnabled("appcheckadmin")) {
+    client.appcheck.services = {};
+    client.appcheck.services.list = loadCommand("appcheck-services-list");
+    client.appcheck.services.get = loadCommand("appcheck-services-get");
+    client.appcheck.services.set = loadCommand("appcheck-services-set");
+  }
   client.appdistribution = {};
   client.appdistribution.distribute = loadCommand("appdistribution-distribute");
   client.appdistribution.testers = {};
@@ -67,6 +76,8 @@ export function load(client: CLIClient): CLIClient {
   client.auth.export = loadCommand("auth-export");
   client.auth.import = loadCommand("auth-import");
   client.crashlytics = {};
+  client.crashlytics.onboard = {};
+  client.crashlytics.onboard.web = loadCommand("crashlytics-onboard-web");
   client.crashlytics.symbols = {};
   client.crashlytics.symbols.upload = loadCommand("crashlytics-symbols-upload");
   client.crashlytics.mappingfile = {};
@@ -240,6 +251,12 @@ export function load(client: CLIClient): CLIClient {
     client.ailogic.config = {};
     client.ailogic.config.get = loadCommand("ailogic-config-get");
     client.ailogic.config.set = loadCommand("ailogic-config-set");
+    client.ailogic.templates = {};
+    client.ailogic.templates.list = loadCommand("ailogic-templates-list");
+    client.ailogic.templates.get = loadCommand("ailogic-templates-get");
+    client.ailogic.templates.delete = loadCommand("ailogic-templates-delete");
+    client.ailogic.templates.lock = loadCommand("ailogic-templates-lock");
+    client.ailogic.templates.unlock = loadCommand("ailogic-templates-unlock");
   }
 
   client.login = loadCommand("login");
