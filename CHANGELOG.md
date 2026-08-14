@@ -1,10 +1,10 @@
-- Automatically enable non-interactive mode when an AI agent is detected in the environment to prevent the CLI from hanging on interactive prompts.
-- Added support for a two-phase non-interactive login flow. Initiate this by running `firebase login --non-interactive`, navigate to the printed link to get an authorization code, and complete the login by running `firebase login <auth_code>`.
-- Fixed `apps:init` writing `google-services.json` to an `app/app` path when the Android module has no `src` directory, by detecting the module from the directory basename instead of the first path segment (#10863).
-- Fixed `firestore:locations` failing with a `null` project error when run without an active project (#10881).
-- Fixed authentication refresh issue under Application Default Credentials (ADC) when no project is active (#10880).
-- Added `crashlytics:onboard:web` CLI command to support Crashlytics onboarding for web apps.
-- Added `hidden` source map support to `crashlytics:sourcemap:upload`.
-- Fixed typo in loginPrototyper URL which caused issues during Firebase MCP server firebase_login
-- Added `appcheck:services:list`, `appcheck:services:get` and `appcheck:services:set` to read and change App Check enforcement per service.
-- Fixed unenforced read-only isolation for Native SQL queries for Firebase SQL Connect.
+- Fixed an issue where managed service accounts for declarative security were not deleted when all functions in a codebase were deleted, or caused IAM permission errors on empty codebase deploys.
+- Configured OneMCP server tools to require a Firebase project by default, with options to opt-out specific tools (such as Developer Knowledge document search).
+- Fixed a bug where deploying functions with the `dartfunctions` experiment enabled could incorrectly prompt to delete existing GCF v2 functions.
+- Added `outputSchema` support for local MCP tools.
+- Skip functions lifecycle hooks during partial (filtered) deployments, and print instructions for running them manually.
+- Added `appcheck:providers:list`, `appcheck:providers:get` and `appcheck:providers:set` to configure App Check attestation providers for an app.
+- Added `appcheck:apps:list` to show every app with its configured App Check providers.
+- Added web app support for Crashlytics MCP tools and prompts.
+- Added support for forwarding custom HTTP headers (`Mcp-Param-*`) to remote MCP tools when defined in tool parameter input schemas (`x-mcp-header`), per [SEP-2243](https://modelcontextprotocol.io/seps/2243-http-standardization).
+- Improved function parameter prompting clarity for multi-codebase deploys (#10897)
