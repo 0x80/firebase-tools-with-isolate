@@ -1,4 +1,5 @@
-- [Fixed] Defer secret access permission granting to release phase to prevent service account 404 race conditions.
-- Fixed parsing and path resolution bugs in `ext:export` options, and reverted `--extension-instance` option back to `--instance`.
-- [Fixed] Increases default polling timeout for App Hosting operations and rollouts to 60 minutes.
-- Fixed an issue where App Hosting deploys failed when the deploying account lacked permission to create or grant roles to the default compute service account, even when that service account already existed. (#10806)
+- Added support for the `FIREBASE_DEBUG_PATH` environment variable to customize the debug log output location.
+- Add `humanReadableDescription` field to MCP tools and use it in `--generate-tool-list` output.
+- Fixed an issue where the Functions emulator replaced an IPC failure with an unrelated `TypeError` about stream chunk types, hiding why the runtime became unreachable (#10876).
+- [Added] Add -f, --force option to `firebase ext:migrate`.
+- [Fixed] Fix parameter type preservation and optional system parameter handling during extension updates in `firebase ext:migrate`
