@@ -1,5 +1,10 @@
-- Added support for the `FIREBASE_DEBUG_PATH` environment variable to customize the debug log output location.
-- Add `humanReadableDescription` field to MCP tools and use it in `--generate-tool-list` output.
-- Fixed an issue where the Functions emulator replaced an IPC failure with an unrelated `TypeError` about stream chunk types, hiding why the runtime became unreachable (#10876).
-- [Added] Add -f, --force option to `firebase ext:migrate`.
-- [Fixed] Fix parameter type preservation and optional system parameter handling during extension updates in `firebase ext:migrate`
+- Updated the Firebase SQL Connect local toolkit to v3.4.19, which includes the following changes:
+  - [fixed] Bug fixes and performance improvements for the PostgreSQL emulator.
+- [fixed] Clean up managed service accounts when all functions in a codebase are deleted.
+- Corrected Cloud Tasks emulator Queue ID validation error message to match Cloud Tasks naming rules.
+- Repurposed the local `dataconnect_execute` tool as `dataconnect_execute_in_emulator` to run GraphQL queries and mutations on the local SQL Connect emulator.
+- Configured the SQL Connect (Data Connect) OneMCP proxy server in `ONEMCP_SERVERS` with a selection of remote tools.
+- Configured the `Mcp-Param-Region` HTTP header workaround in `OneMcpServer` for MCP routing support.
+- [fixed] Retry IAM policy updates on replication lag and concurrency conflicts.
+- [fixed] Prevent deadlock and stale source tokens during Cloud Functions deployment retries.
+- [fixed] Retry Cloud Functions creation on HTTP 400 service account propagation errors.
