@@ -28,6 +28,7 @@ import {
   endpointMatchesAnyFilter,
   getEndpointFilters,
   groupEndpointsByCodebase,
+  isCodebasePartiallyFiltered,
   targetCodebases,
 } from "./functionsDeployHelper";
 import { logLabeledBullet, logLabeledWarning } from "../../utils";
@@ -112,12 +113,7 @@ export async function discoverSecurityDetails(
     (e) => !!e.labels?.[DECLARATIVE_SECURITY_ETAG_LABEL],
   )?.labels?.[DECLARATIVE_SECURITY_ETAG_LABEL];
 
-  const isPartiallyFiltered = !!(
-    filters &&
-    filters.some(
-      (f) => (!f.codebase || f.codebase === codebase) && f.idChunks && f.idChunks.length > 0,
-    )
-  );
+  const isPartiallyFiltered = isCodebasePartiallyFiltered(codebase, filters);
   const isEnrolling = !!requiredRoles && !existingManagedSA;
   const isUnenrolling = !requiredRoles && !!existingManagedSA && !!haveRolesEtag;
 
@@ -169,14 +165,15 @@ export async function discoverSecurityDetails(
     };
   }
 
+  await ensure.checkDeclarativeSecurityApisEnabled(projectId, codebase);
+
   let managedSA = existingManagedSA;
   if (!managedSA) {
     const saToCreate = await iam.generateManagedServiceAccountName(projectId, "firebase-fn");
     managedSA = `${saToCreate}@${projectId}.iam.gserviceaccount.com`;
   }
 
-  const existingSalt = haveRolesEtag ? haveRolesEtag.split("-")[0] : undefined;
-  const newEtag = iam.computeRolesEtag(requiredRoles!, existingSalt);
+  const newEtag = iam.computeRolesEtag(requiredRoles!);
 
   for (const endpoint of backend.allEndpoints(want)) {
     endpoint.serviceAccount = managedSA;

@@ -1,10 +1,5 @@
-- Updated the Firebase SQL Connect local toolkit to v3.4.19, which includes the following changes:
-  - [fixed] Bug fixes and performance improvements for the PostgreSQL emulator.
-- [fixed] Clean up managed service accounts when all functions in a codebase are deleted.
-- Corrected Cloud Tasks emulator Queue ID validation error message to match Cloud Tasks naming rules.
-- Repurposed the local `dataconnect_execute` tool as `dataconnect_execute_in_emulator` to run GraphQL queries and mutations on the local SQL Connect emulator.
-- Configured the SQL Connect (Data Connect) OneMCP proxy server in `ONEMCP_SERVERS` with a selection of remote tools.
-- Configured the `Mcp-Param-Region` HTTP header workaround in `OneMcpServer` for MCP routing support.
-- [fixed] Retry IAM policy updates on replication lag and concurrency conflicts.
-- [fixed] Prevent deadlock and stale source tokens during Cloud Functions deployment retries.
-- [fixed] Retry Cloud Functions creation on HTTP 400 service account propagation errors.
+- [fixed] Fail fast with an actionable error and remediation instructions when declarative security APIs (IAM and Cloud Resource Manager) are disabled on the project.
+- Updated Pub/Sub emulator to version 0.8.36.
+- [fixed] Clean up managed service accounts when opting out of declarative security alongside a filtered codebase deploy.
+- ext:uninstall --immediate now warns about secrets bound to the extension that will be deleted and offers a migration path.
+- [fixed] Generate deterministic unsalted ETags for declarative security roles.

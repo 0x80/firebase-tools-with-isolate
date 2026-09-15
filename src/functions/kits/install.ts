@@ -162,6 +162,13 @@ export interface PrintKitFirstDeployReportOptions {
   preDiscoveredBuild?: build.Build;
 }
 
+export interface PromptSecurityConfirmationOptions {
+  rawPkgName: string;
+  packageName: string;
+  nonInteractive?: boolean;
+  force?: boolean;
+}
+
 /**
  * Generates a unique identifier by appending a random 4-character hex suffix if a collision exists.
  * Ensures the candidate is truncated so the total length does not exceed 40 characters.
@@ -432,10 +439,9 @@ export async function promptKitId(
  * Warns about third-party packages or missing shrinkwrap, and prompts for user confirmation before installation.
  */
 export async function promptSecurityConfirmation(
-  rawPkgName: string,
-  packageName: string,
-  nonInteractive?: boolean,
+  options: PromptSecurityConfirmationOptions,
 ): Promise<boolean> {
+  const { rawPkgName, packageName, nonInteractive, force } = options;
   const isThirdParty = isThirdPartyPackage(packageName);
   if (isThirdParty) {
     logLabeledWarning(
@@ -465,6 +471,7 @@ export async function promptSecurityConfirmation(
       message: confirmMessage,
       default: false,
       nonInteractive,
+      force,
     });
     if (!confirmInstallation) {
       throw new FirebaseError("Installation cancelled.");
@@ -1003,7 +1010,7 @@ export async function addInstanceToKit(
  * Discovers the build manifest from the compiled kit source directory.
  */
 export async function discoverKitBuild(
-  options: { config?: Config; project?: string; projectId?: string },
+  options: { config?: Config; project?: string; projectId?: string; instanceId?: string },
   absSourcePath: string,
 ): Promise<build.Build> {
   const projectId = getProjectId(options) || "";
@@ -1014,7 +1021,8 @@ export async function discoverKitBuild(
     runtime: supported.latest("nodejs"),
   };
   const runtimeDelegate = await runtimes.getRuntimeDelegate(delegateContext);
-  return runtimeDelegate.discoverBuild({}, {});
+  const firebaseEnvs = functionsEnv.loadFirebaseEnvs({ projectId }, projectId, options.instanceId);
+  return runtimeDelegate.discoverBuild({}, firebaseEnvs);
 }
 
 /**
@@ -1053,14 +1061,14 @@ export async function promptAndWriteKitParams(
   }
 
   const typedUserEnvs = build.envWithTypes(options.params, userEnvs);
-  const { paramValues: resolvedEnvs, secretRefs: resolvedSecretRefs } = await params.resolveParams(
-    options.params,
-    firebaseConfig,
-    typedUserEnvs,
-    options.instanceId,
-    options.nonInteractive,
-    options.force,
-  );
+  const { paramValues: resolvedEnvs, secretRefs: resolvedSecretRefs } = await params.resolveParams({
+    params: options.params,
+    firebaseConfig: firebaseConfig,
+    userEnvs: typedUserEnvs,
+    codebase: options.instanceId,
+    nonInteractive: options.nonInteractive,
+    force: options.force,
+  });
 
   functionsEnv.writeResolvedParams(resolvedEnvs, userEnvs, userEnvOpt);
   if (experiments.isEnabled("secretEnvParams")) {
@@ -1274,7 +1282,7 @@ export async function addKitInstanceOrConfigureProject(
   const shouldConfigure = options.configure !== false;
   if (shouldConfigure) {
     try {
-      discoveredBuild = await discoverKitBuild(options, absSourcePath);
+      discoveredBuild = await discoverKitBuild({ ...options, instanceId }, absSourcePath);
     } catch (err: unknown) {
       logger.debug(`Could not discover kit build for params prompting: ${getErrMsg(err)}`);
     }
@@ -1376,11 +1384,12 @@ export async function resolvePackageSource(
   validateNpmPackageName(rawPkgName);
   const { packageName } = parseNpmPackageSpecifier(rawPkgName);
 
-  const isThirdParty = await promptSecurityConfirmation(
+  const isThirdParty = await promptSecurityConfirmation({
     rawPkgName,
     packageName,
-    options.nonInteractive,
-  );
+    nonInteractive: options.nonInteractive,
+    force: options.force,
+  });
 
   return {
     defaultKitName: packageName,
@@ -1503,7 +1512,7 @@ export async function installKitOrInstance(
   const shouldConfigure = options.configure !== false;
   if (shouldConfigure) {
     try {
-      discoveredBuild = await discoverKitBuild(options, absSourcePath);
+      discoveredBuild = await discoverKitBuild({ ...options, instanceId }, absSourcePath);
     } catch (err: unknown) {
       logger.debug(`Could not discover kit build for params prompting: ${getErrMsg(err)}`);
     }

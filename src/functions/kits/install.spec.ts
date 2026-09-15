@@ -28,6 +28,7 @@ import {
   findExistingKit,
   resolvePackageSource,
   resolveDirectorySource,
+  discoverKitBuild,
   printKitFirstDeployReport,
   addKitInstanceOrConfigureProject,
   installKitOrInstance,
@@ -1276,10 +1277,10 @@ describe("functions/kits/install", () => {
       spawnWithOutputStub.resolves(JSON.stringify([{ hasShrinkwrap: true }]));
       const confirmStub = sinon.stub(prompt, "confirm");
 
-      const res = await promptSecurityConfirmation(
-        "@firebase-function-kits/my-kit",
-        "@firebase-function-kits/my-kit",
-      );
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@firebase-function-kits/my-kit",
+        packageName: "@firebase-function-kits/my-kit",
+      });
 
       expect(res).to.be.false;
       expect(confirmStub).to.not.have.been.called;
@@ -1289,10 +1290,10 @@ describe("functions/kits/install", () => {
       spawnWithOutputStub.resolves(JSON.stringify([{ files: [{ path: "package.json" }] }]));
       const confirmStub = sinon.stub(prompt, "confirm").resolves(true);
 
-      const res = await promptSecurityConfirmation(
-        "@firebase-function-kits/my-kit",
-        "@firebase-function-kits/my-kit",
-      );
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@firebase-function-kits/my-kit",
+        packageName: "@firebase-function-kits/my-kit",
+      });
 
       expect(res).to.be.false;
       expect(confirmStub).to.have.been.calledOnceWith({
@@ -1300,6 +1301,7 @@ describe("functions/kits/install", () => {
           "Are you sure you want to install @firebase-function-kits/my-kit without locked dependencies?",
         default: false,
         nonInteractive: undefined,
+        force: undefined,
       });
       expect(loggerWarnStub).to.have.been.calledWith(
         sinon.match(/functions:/),
@@ -1307,20 +1309,41 @@ describe("functions/kits/install", () => {
       );
     });
 
+    it("should pass force: true to confirm when 1P kit lacks shrinkwrap and force is true", async () => {
+      spawnWithOutputStub.resolves(JSON.stringify([{ files: [{ path: "package.json" }] }]));
+      const confirmStub = sinon.stub(prompt, "confirm").resolves(true);
+
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@firebase-function-kits/my-kit",
+        packageName: "@firebase-function-kits/my-kit",
+        force: true,
+      });
+
+      expect(res).to.be.false;
+      expect(confirmStub).to.have.been.calledOnceWith({
+        message:
+          "Are you sure you want to install @firebase-function-kits/my-kit without locked dependencies?",
+        default: false,
+        nonInteractive: undefined,
+        force: true,
+      });
+    });
+
     it("should prompt confirmation when a 3P kit has shrinkwrap", async () => {
       spawnWithOutputStub.resolves(JSON.stringify([{ hasShrinkwrap: true }]));
       const confirmStub = sinon.stub(prompt, "confirm").resolves(true);
 
-      const res = await promptSecurityConfirmation(
-        "@third-party/custom-kit",
-        "@third-party/custom-kit",
-      );
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@third-party/custom-kit",
+        packageName: "@third-party/custom-kit",
+      });
 
       expect(res).to.be.true;
       expect(confirmStub).to.have.been.calledOnceWith({
         message: "Are you sure you want to install the third-party kit @third-party/custom-kit?",
         default: false,
         nonInteractive: undefined,
+        force: undefined,
       });
       expect(loggerWarnStub).to.have.been.calledWith(
         sinon.match(/functions:/),
@@ -1328,15 +1351,81 @@ describe("functions/kits/install", () => {
       );
     });
 
+    it("should pass force: true to confirm when 3P kit has shrinkwrap and force is true", async () => {
+      spawnWithOutputStub.resolves(JSON.stringify([{ hasShrinkwrap: true }]));
+      const confirmStub = sinon.stub(prompt, "confirm").resolves(true);
+
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@third-party/custom-kit",
+        packageName: "@third-party/custom-kit",
+        force: true,
+      });
+
+      expect(res).to.be.true;
+      expect(confirmStub).to.have.been.calledOnceWith({
+        message: "Are you sure you want to install the third-party kit @third-party/custom-kit?",
+        default: false,
+        nonInteractive: undefined,
+        force: true,
+      });
+    });
+
+    it("should prompt confirmation when a 3P kit lacks shrinkwrap", async () => {
+      spawnWithOutputStub.resolves(JSON.stringify([{ files: [{ path: "package.json" }] }]));
+      const confirmStub = sinon.stub(prompt, "confirm").resolves(true);
+
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@third-party/custom-kit",
+        packageName: "@third-party/custom-kit",
+      });
+
+      expect(res).to.be.true;
+      expect(confirmStub).to.have.been.calledOnceWith({
+        message:
+          "Are you sure you want to install the third-party kit @third-party/custom-kit without locked dependencies?",
+        default: false,
+        nonInteractive: undefined,
+        force: undefined,
+      });
+      expect(loggerWarnStub).to.have.been.calledWith(
+        sinon.match(/functions:/),
+        sinon.match(/is a third-party kit/),
+      );
+      expect(loggerWarnStub).to.have.been.calledWith(
+        sinon.match(/functions:/),
+        sinon.match(/does not have an npm-shrinkwrap\.json file/),
+      );
+    });
+
+    it("should pass force: true to confirm when 3P kit lacks shrinkwrap and force is true", async () => {
+      spawnWithOutputStub.resolves(JSON.stringify([{ files: [{ path: "package.json" }] }]));
+      const confirmStub = sinon.stub(prompt, "confirm").resolves(true);
+
+      const res = await promptSecurityConfirmation({
+        rawPkgName: "@third-party/custom-kit",
+        packageName: "@third-party/custom-kit",
+        force: true,
+      });
+
+      expect(res).to.be.true;
+      expect(confirmStub).to.have.been.calledOnceWith({
+        message:
+          "Are you sure you want to install the third-party kit @third-party/custom-kit without locked dependencies?",
+        default: false,
+        nonInteractive: undefined,
+        force: true,
+      });
+    });
+
     it("should cancel installation if user declines confirmation", async () => {
       spawnWithOutputStub.resolves(JSON.stringify([{ files: [{ path: "package.json" }] }]));
       sinon.stub(prompt, "confirm").resolves(false);
 
       await expect(
-        promptSecurityConfirmation(
-          "@firebase-function-kits/my-kit",
-          "@firebase-function-kits/my-kit",
-        ),
+        promptSecurityConfirmation({
+          rawPkgName: "@firebase-function-kits/my-kit",
+          packageName: "@firebase-function-kits/my-kit",
+        }),
       ).to.be.rejectedWith(FirebaseError, "Installation cancelled.");
     });
   });
@@ -1848,6 +1937,47 @@ describe("functions/kits/install", () => {
     });
   });
 
+  describe("discoverKitBuild", () => {
+    it("should pass firebase envs including FIREBASE_KIT_INSTANCE_ID to discoverBuild when instanceId is provided", async () => {
+      const delegate = {
+        discoverBuild: sinon.stub().resolves(build.empty()),
+      };
+      sinon
+        .stub(runtimes, "getRuntimeDelegate")
+        .resolves(delegate as unknown as runtimes.RuntimeDelegate);
+
+      await discoverKitBuild({ instanceId: "my-inst", projectId: "test-proj" }, "/mock/source");
+
+      expect(delegate.discoverBuild).to.have.been.calledOnceWithExactly(
+        {},
+        {
+          FIREBASE_CONFIG: JSON.stringify({ projectId: "test-proj" }),
+          GCLOUD_PROJECT: "test-proj",
+          FIREBASE_KIT_INSTANCE_ID: "my-inst",
+        },
+      );
+    });
+
+    it("should omit FIREBASE_KIT_INSTANCE_ID from discoverBuild envs when instanceId is omitted", async () => {
+      const delegate = {
+        discoverBuild: sinon.stub().resolves(build.empty()),
+      };
+      sinon
+        .stub(runtimes, "getRuntimeDelegate")
+        .resolves(delegate as unknown as runtimes.RuntimeDelegate);
+
+      await discoverKitBuild({ projectId: "test-proj" }, "/mock/source");
+
+      expect(delegate.discoverBuild).to.have.been.calledOnceWithExactly(
+        {},
+        {
+          FIREBASE_CONFIG: JSON.stringify({ projectId: "test-proj" }),
+          GCLOUD_PROJECT: "test-proj",
+        },
+      );
+    });
+  });
+
   describe("printKitFirstDeployReport", () => {
     it("should report functions when present with bolded base names", async () => {
       const mockBuild: build.Build = {
@@ -2228,14 +2358,14 @@ describe("functions/kits/install", () => {
         projectAlias: "staging",
       });
 
-      expect(resolveParamsStub).to.have.been.calledWith(
-        paramList,
-        { projectId: "my-project" },
-        sinon.match.object,
-        "inst",
-        false,
-        false,
-      );
+      expect(resolveParamsStub).to.have.been.calledWith({
+        params: paramList,
+        firebaseConfig: { projectId: "my-project" },
+        userEnvs: sinon.match.object,
+        codebase: "inst",
+        nonInteractive: false,
+        force: false,
+      });
 
       expect(writeResolvedParamsStub).to.have.been.calledWith(
         resolvedParamValues,
@@ -2290,14 +2420,14 @@ describe("functions/kits/install", () => {
         params: paramList,
       });
 
-      expect(resolveParamsStub).to.have.been.calledWith(
-        paramList,
-        { projectId: "my-project" },
-        sinon.match.object,
-        "inst",
-        undefined,
-        undefined,
-      );
+      expect(resolveParamsStub).to.have.been.calledWith({
+        params: paramList,
+        firebaseConfig: { projectId: "my-project" },
+        userEnvs: sinon.match.object,
+        codebase: "inst",
+        nonInteractive: undefined,
+        force: undefined,
+      });
     });
 
     it("should propagate errors thrown by resolveParams", async () => {
@@ -2425,6 +2555,10 @@ describe("functions/kits/install", () => {
       );
 
       expect(res.action).to.equal("addedInstance");
+      expect(delegate.discoverBuild).to.have.been.calledWith(
+        {},
+        sinon.match({ FIREBASE_KIT_INSTANCE_ID: "inst2" }),
+      );
       expect(resolveParamsStub).to.have.been.calledOnce;
       expect(writeResolvedParamsStub).to.have.been.calledOnce;
     });
@@ -3151,6 +3285,11 @@ describe("functions/kits/install", () => {
           },
         ],
       });
+
+      const tsconfig = JSON.parse(
+        writtenFiles["function-kits/firestore-bigquery-export/source/tsconfig.json"] as string,
+      ) as { compilerOptions?: { skipLibCheck?: boolean } };
+      expect(tsconfig.compilerOptions?.skipLibCheck).to.be.true;
     });
 
     it("should accept custom kitId and instanceId for package kit", async () => {
@@ -3670,6 +3809,83 @@ describe("functions/kits/install", () => {
           "function-kits/firestore-bigquery-export/config-firestore-bigquery-export",
           ".env.target-proj",
         ),
+      );
+    });
+
+    it("should cancel installation for a third-party kit in non-interactive mode when force is not set", async () => {
+      const mockConfig = {
+        projectDir: "/mock/project",
+        src: { functions: [] },
+        path: (p: string) => path.join("/mock/project", p),
+      } as unknown as Config;
+
+      await expect(
+        installKitOrInstance({
+          config: mockConfig,
+          package: "@third-party/custom-kit",
+          nonInteractive: true,
+        }),
+      ).to.be.rejectedWith(FirebaseError, "Installation cancelled.");
+    });
+
+    it("should successfully install a third-party kit without shrinkwrap when force is true", async () => {
+      mockFs({
+        "/mock/project/function-kits/custom-kit/source/package-lock.json": {
+          packages: {
+            "node_modules/@third-party/custom-kit": {
+              peerDependencies: {
+                "firebase-functions": "^7.0.0",
+              },
+            },
+            "node_modules/firebase-functions": { version: "7.3.2" },
+          },
+        },
+      });
+      spawnWithOutputStub.resolves(JSON.stringify([{ files: [{ path: "package.json" }] }]));
+      const writtenFiles: Record<string, unknown> = {};
+      const mockConfig = {
+        projectDir: "/mock/project",
+        src: { functions: [] },
+        path: (p: string) => path.join("/mock/project", p),
+        writeProjectFile: (file: string, content: unknown) => {
+          writtenFiles[file] = content;
+        },
+        askWriteProjectFile: (file: string, content: unknown) => {
+          writtenFiles[file] = content;
+          return Promise.resolve();
+        },
+      } as unknown as Config;
+
+      const res = await installKitOrInstance({
+        config: mockConfig,
+        package: "@third-party/custom-kit@1.0.0",
+        nonInteractive: true,
+        force: true,
+      });
+
+      expect(res).to.deep.equal({
+        action: "installedKit",
+        kitId: "custom-kit",
+        instanceId: "custom-kit",
+        sourcePath: "function-kits/custom-kit/source",
+        configDirPath: "function-kits/custom-kit/config-custom-kit",
+      });
+
+      expect(wrapSpawnStub).to.have.been.calledThrice;
+      expect(wrapSpawnStub.firstCall).to.have.been.calledWith(
+        "npm",
+        ["install", "@third-party/custom-kit@1.0.0", "--save-prefix=^", "--ignore-scripts"],
+        "/mock/project/function-kits/custom-kit/source",
+      );
+      expect(wrapSpawnStub.secondCall).to.have.been.calledWith(
+        "npm",
+        ["install", "firebase-functions@^7.3.2", "--save-prefix=^", "--ignore-scripts"],
+        "/mock/project/function-kits/custom-kit/source",
+      );
+      expect(wrapSpawnStub.thirdCall).to.have.been.calledWith(
+        "npm",
+        ["run", "build"],
+        "/mock/project/function-kits/custom-kit/source",
       );
     });
   });
