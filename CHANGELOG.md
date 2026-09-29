@@ -1,5 +1,8 @@
-- Improved error message with a link to the Firebase console when `projects:addfirebase` fails due to unaccepted Firebase Terms of Service.
-- [fixed] Fixed `firebase deploy` leaving the Python discovery admin server (`serving.py`) running after a killed or wedged deploy, which caused later deploys to hang indefinitely on `connect ETIMEDOUT` (#10847).
-- SQL Connect generated Admin Node SDKs now support `firebase-admin` v14.
-- Allow pre-existing Crashlytics source maps to be overwritten instead of returning an error.
-- Fixed Crashlytics source map uploads for Angular builds to strip out leading directory paths (e.g., `/dist/angular/browser/`).
+- Increased retries for IAM policy updates to further reduce deployment flakiness from service account propagation delays.
+- Preselect the default values of list function params in multi-select prompts.
+- Fixed `ERR_REQUIRE_ESM` crash (e.g. on `emulators:start`) in the standalone binary and on Node.js versions earlier than 20.19 / 22.12. (#11168)
+- Updated the Firebase console link in the Terms of Service error to include `?forceCheckTos=true`.
+- Honor boolean and integer defaults in `select` prompts for function params instead of preselecting the first option.
+- Added support for overriding the Cloud Secret Manager secret ID and version used to resolve a named secret parameter via `FIREBASE_SECRET_REF_<SECRET_NAME>` in Functions `.env` files.
+- Introduced function kits (`functions:kits:install`, `functions:kits:uninstall`, `functions:kits:list`) to configure and run multiple instances of functions from the CLI.
+- Added `ext:migrate` and updated `ext:export` and `ext:list` to assist with migrating Firebase Extensions to function kits.
