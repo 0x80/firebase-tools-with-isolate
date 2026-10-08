@@ -1,12 +1,12 @@
 {
-  "name": "firebase-tools",
-  "version": "15.33.0",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.33.0-0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "firebase-tools",
-      "version": "15.33.0",
+      "name": "firebase-tools-with-isolate",
+      "version": "15.33.0-0",
       "license": "MIT",
       "dependencies": {
         "@apphosting/common": "^0.0.8",
@@ -4916,6 +4916,76 @@
       "engines": {
         "node": ">= 8"
       }
+    },
+    "node_modules/@npmcli/agent": {
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/@npmcli/agent/-/agent-4.0.2.tgz",
+      "integrity": "sha512-EUEuWAxnL07Sp5/iC/1X6Xj+XThUvnbei9zfRWZdEXa7lss9RTHMhAHBeg+MZ5To9s/gGaSI+UwZTPdYMvKSeg==",
+      "license": "ISC",
+      "dependencies": {
+        "agent-base": "^7.1.0",
+        "http-proxy-agent": "^7.0.0",
+        "https-proxy-agent": "^7.0.1",
+        "lru-cache": "^11.2.1",
+        "socks-proxy-agent": "^8.0.3"
+      },
+      "engines": {
+        "node": "^20.17.0 || >=22.9.0"
+      }
+    },
+    "node_modules/@npmcli/agent/node_modules/agent-base": {
+      "version": "7.1.4",
+      "resolved": "https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz",
+      "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 14"
+      }
+    },
+    "node_modules/@npmcli/agent/node_modules/debug": {
+      "version": "4.4.3",
+      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+      "license": "MIT",
+      "dependencies": {
+        "ms": "^2.1.3"
+      },
+      "engines": {
+        "node": ">=6.0"
+      },
+      "peerDependenciesMeta": {
+        "supports-color": {
+          "optional": true
+        }
+      }
+    },
+    "node_modules/@npmcli/agent/node_modules/https-proxy-agent": {
+      "version": "7.0.6",
+      "resolved": "https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-7.0.6.tgz",
+      "integrity": "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==",
+      "license": "MIT",
+      "dependencies": {
+        "agent-base": "^7.1.2",
+        "debug": "4"
+      },
+      "engines": {
+        "node": ">= 14"
+      }
+    },
+    "node_modules/@npmcli/agent/node_modules/lru-cache": {
+      "version": "11.5.3",
+      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
+      "integrity": "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==",
+      "license": "BlueOak-1.0.0",
+      "engines": {
+        "node": "20 || >=22"
+      }
+    },
+    "node_modules/@npmcli/agent/node_modules/ms": {
+      "version": "2.1.3",
+      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+      "license": "MIT"
     },
     "node_modules/@npmcli/arborist": {
       "version": "9.9.2",
@@ -10917,6 +10987,15 @@
         "node": ">=8"
       }
     },
+    "node_modules/detect-monorepo": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/detect-monorepo/-/detect-monorepo-1.2.0.tgz",
+      "integrity": "sha512-w+yWvGFWloYUkGCrONGAuCILhDo3Hb1rrgk4IbB3oA6+eqGJTTflBnnOxwh+0splahWEqAa1gXWtm1vpdhBIog==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=20.0.0"
+      }
+    },
     "node_modules/devalue": {
       "version": "4.3.0",
       "resolved": "https://registry.npmjs.org/devalue/-/devalue-4.3.0.tgz",
@@ -14396,6 +14475,12 @@
         "type": "github",
         "url": "https://github.com/sponsors/wooorm"
       }
+    },
+    "node_modules/http-cache-semantics": {
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/http-cache-semantics/-/http-cache-semantics-4.3.0.tgz",
+      "integrity": "sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA==",
+      "license": "BSD-2-Clause"
     },
     "node_modules/http-errors": {
       "version": "2.0.0",
@@ -28423,6 +28508,52 @@
         "fastq": "^1.6.0"
       }
     },
+    "@npmcli/agent": {
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/@npmcli/agent/-/agent-4.0.2.tgz",
+      "integrity": "sha512-EUEuWAxnL07Sp5/iC/1X6Xj+XThUvnbei9zfRWZdEXa7lss9RTHMhAHBeg+MZ5To9s/gGaSI+UwZTPdYMvKSeg==",
+      "requires": {
+        "agent-base": "^7.1.0",
+        "http-proxy-agent": "^7.0.0",
+        "https-proxy-agent": "^7.0.1",
+        "lru-cache": "^11.2.1",
+        "socks-proxy-agent": "^8.0.3"
+      },
+      "dependencies": {
+        "agent-base": {
+          "version": "7.1.4",
+          "resolved": "https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz",
+          "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="
+        },
+        "debug": {
+          "version": "4.4.3",
+          "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+          "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+          "requires": {
+            "ms": "^2.1.3"
+          }
+        },
+        "https-proxy-agent": {
+          "version": "7.0.6",
+          "resolved": "https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-7.0.6.tgz",
+          "integrity": "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==",
+          "requires": {
+            "agent-base": "^7.1.2",
+            "debug": "4"
+          }
+        },
+        "lru-cache": {
+          "version": "11.5.3",
+          "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
+          "integrity": "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg=="
+        },
+        "ms": {
+          "version": "2.1.3",
+          "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+          "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
+        }
+      }
+    },
     "@npmcli/arborist": {
       "version": "9.9.2",
       "resolved": "https://registry.npmjs.org/@npmcli/arborist/-/arborist-9.9.2.tgz",
@@ -32649,6 +32780,11 @@
       "dev": true,
       "optional": true
     },
+    "detect-monorepo": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/detect-monorepo/-/detect-monorepo-1.2.0.tgz",
+      "integrity": "sha512-w+yWvGFWloYUkGCrONGAuCILhDo3Hb1rrgk4IbB3oA6+eqGJTTflBnnOxwh+0splahWEqAa1gXWtm1vpdhBIog=="
+    },
     "devalue": {
       "version": "4.3.0",
       "resolved": "https://registry.npmjs.org/devalue/-/devalue-4.3.0.tgz",
@@ -35168,6 +35304,11 @@
       "resolved": "https://registry.npmjs.org/html-void-elements/-/html-void-elements-2.0.1.tgz",
       "integrity": "sha512-0quDb7s97CfemeJAnW9wC0hw78MtW7NU3hqtCD75g2vFlDLt36llsYD7uB7SUzojLMP24N5IatXf7ylGXiGG9A==",
       "dev": true
+    },
+    "http-cache-semantics": {
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/http-cache-semantics/-/http-cache-semantics-4.3.0.tgz",
+      "integrity": "sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA=="
     },
     "http-errors": {
       "version": "2.0.0",
