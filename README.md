@@ -4,15 +4,6 @@ This is a fork of [firebase-tools](https://github.com/firebase/firebase-tools) t
 
 The integration is minimal — roughly 50 lines of code across 3 files — and does not affect any existing functionality. Isolation runs **automatically** whenever your functions source directory sits inside a detected monorepo (pnpm / npm / yarn / bun workspaces, or Rush). Standalone projects are left untouched and behave exactly like upstream.
 
-> [!TIP]
-> Using an AI assistant? Install [Firebase agent skills](https://github.com/firebase/agent-skills) to give it Firebase-specific knowledge, best practices, and workflows, including how to use the Firebase CLI and MCP server effectively:
->
-> ```bash
-> npx skills add firebase/agent-skills
-> ```
->
-> See the [Firebase agent skills documentation](https://firebase.google.com/docs/ai-assistance/agent-skills) for more information.
-
 ## Installation
 
 Add this dependency to the root of your monorepo:
