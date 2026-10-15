@@ -1,9 +1,15 @@
-- Updated Firebase Hosting API requests to be project-scoped, eliminating site-scoped requests and the use of `-` as a project identifier.
-- Added check for a default Hosting site and offer to create one during `firebase apps:create web`.
-- Added a check for a default Hosting site and offer to create one during `auth` initialization.
-- - [Fixed] Report the GCFv2-to-GCFv1 downgrade error during validation instead of a misleading CPU error (#5461).
-- Fixed `functions:delete` recreating an already-deleted Cloud Tasks queue for task queue functions. (#9305)
-- Batched function deletions across instances when uninstalling a Function Kit (#11189).
-- Fixed an issue where 2nd-gen functions with parameterized trigger event filters failed default region resolution (#11020).
-- Fixed `functions:lifecycle:list` and `functions:lifecycle:run` failing to detect Function Kit instances (#11240).
-- Fixed nested ternary CEL expressions in function parameters, which previously failed to load or selected the wrong branch. (#7755)
+- Fixed an issue where hosting:clone failed to locate source sites in other projects. (#11247)
+- Updated Pub/Sub emulator to version 0.8.37.
+- Fixed an issue where analytics timeouts could mask command errors or cause successful commands to exit with an error. (#6989)
+- Fixed an issue where unhandled exceptions during Cloud Functions deployment could be silently ignored and exit with code 0 (#6989).
+- Added `crashlytics:heapdumps:{enable,disable,status}` commands to manage Crashlytics Android heap dump collection. (#11225)
+- Removed unused dependencies `proxy-agent`, `universal-analytics`, and `@apphosting/common`.
+- Fixed an issue where throttled task queues stopped processing remaining tasks when a task exhausted its retries or timed out (#6989, #11040).
+- Fixed a race condition in `SourceTokenScraper` that could cause concurrent function deployments to hang when refreshing an expired source token (#6989).
+- Fixed an issue where a Function Kit and a functions codebase sharing the same source directory failed `firebase.json` validation. (#11253)
+- Fixed an issue where Cloud Functions creation did not retry on HTTP 403 service account propagation errors. (#11251)
+- Updated Auth deployment to use existing apps from any platform before creating a default web app. (#11250)
+- No longer grant unecessary TRUNCATE privilege to writer roles in `dataconnect:sql:migrate`. (#11276)
+- Updated the Firebase SQL Connect local toolkit to v3.4.23, which includes the following changes:
+  - Updated the Golang dependency version to 1.26.9.
+  - Improved Native SQL query validation, wrapper aliasing, and line-comment handling to support the SQL editor in Firebase SQL.
