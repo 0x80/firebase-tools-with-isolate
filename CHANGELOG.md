@@ -1,6 +1,6 @@
-- Ensured the Firebase Hosting API is enabled before deploying and running other Hosting commands.
-- Fixed an issue where empty inputs were accepted for Secret param values in Firebase Functions.
-- Fixed an issue where the Firebase MCP server always suggested `npx firebase-tools@latest` even when the `firebase` CLI was installed.
-- Fixed a Node.js `url.parse()` deprecation warning during `firebase login`.
-- Updated the Firebase SQL Connect local toolkit to v3.4.24, which includes some internal bug fixes.
-- Fixed 2nd Gen Auth Emulator CloudEvent payloads to conform to the Eventarc `google.events.firebase.auth.v2.AuthEventData` wire format (`metadata.createTime`, `providerData[].uid`, and removing `tenantId` from nested user data).
+- Updated chokidar dependency to ^4.0.3 to remove vulnerable braces dependency (#11308).
+- Fixed an issue where the Firebase MCP server referred to `update_firebase_environment` instead of `firebase_update_environment`.
+- Updated the Firebase SQL Connect local toolkit to v3.4.25, which includes the following changes:
+  - Internal improvements and bug fixes.
+- Fixed CVE-2026-111181 by updating `body-parser` dependency.
+- Fixed the Firestore emulator exiting when it could not watch the rules file for changes. It now logs a warning instead. (#4298)
