@@ -1,7 +1,7 @@
 {
-  "name": "firebase-tools-with-isolate",
-  "version": "15.34.2",
-  "description": "Command-Line Interface for Firebase with monorepo support",
+  "name": "firebase-tools",
+  "version": "15.35.0",
+  "description": "Command-Line Interface for Firebase",
   "main": "./lib/index.js",
   "mcpName": "io.github.firebase/firebase-mcp",
   "bin": {
@@ -147,7 +147,6 @@
     "lsofi": "^2.0.0",
     "marked": "^13.0.2",
     "marked-terminal": "^7.0.0",
-    "mime": "^2.5.2",
     "minimatch": "^3.0.4",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.7",

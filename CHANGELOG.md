@@ -1,6 +1,4 @@
-- Updated chokidar dependency to ^4.0.3 to remove vulnerable braces dependency (#11308).
-- Fixed an issue where the Firebase MCP server referred to `update_firebase_environment` instead of `firebase_update_environment`.
-- Updated the Firebase SQL Connect local toolkit to v3.4.25, which includes the following changes:
-  - Internal improvements and bug fixes.
-- Fixed CVE-2026-111181 by updating `body-parser` dependency.
-- Fixed the Firestore emulator exiting when it could not watch the rules file for changes. It now logs a warning instead. (#4298)
+- Fixed high query latency on Linux in Data Connect PGlite emulator by enabling TCP_NODELAY on sockets. (#11402)
+- Fixed the emulators startup message showing 127.0.0.1 for the Emulator UI and Hub when they listen on 0.0.0.0; it now also prints the address they listen on. (#6222)
+- Fixed an issue on Windows where starting Java-based emulators (Firestore, Database, Pub/Sub, Storage) could open extra console windows or leave orphaned `java.exe` processes running after exit (#3871, #11261).
+- Updated the Crashlytics MCP `get_report` tool to dynamically validate report names via `listReports` and support optional time `granularity`
