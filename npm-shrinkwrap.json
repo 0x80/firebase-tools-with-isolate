@@ -1,12 +1,12 @@
 {
-  "name": "firebase-tools",
-  "version": "15.37.0",
+  "name": "firebase-tools-with-isolate",
+  "version": "15.37.0-0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "firebase-tools",
-      "version": "15.37.0",
+      "name": "firebase-tools-with-isolate",
+      "version": "15.37.0-0",
       "license": "MIT",
       "dependencies": {
         "@electric-sql/pglite": "^0.3.3",
@@ -16303,9 +16303,7 @@
       "version": "7.0.2",
       "resolved": "https://registry.npmjs.org/http-proxy-agent/-/http-proxy-agent-7.0.2.tgz",
       "integrity": "sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==",
-      "dev": true,
       "license": "MIT",
-      "optional": true,
       "dependencies": {
         "agent-base": "^7.1.0",
         "debug": "^4.3.4"
@@ -16318,9 +16316,7 @@
       "version": "7.1.4",
       "resolved": "https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz",
       "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==",
-      "dev": true,
       "license": "MIT",
-      "optional": true,
       "engines": {
         "node": ">= 14"
       }
@@ -16329,9 +16325,7 @@
       "version": "4.4.3",
       "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
       "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
-      "dev": true,
       "license": "MIT",
-      "optional": true,
       "dependencies": {
         "ms": "^2.1.3"
       },
@@ -16348,9 +16342,7 @@
       "version": "2.1.3",
       "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
-      "dev": true,
-      "license": "MIT",
-      "optional": true
+      "license": "MIT"
     },
     "node_modules/http2-client": {
       "version": "1.3.5",
@@ -25228,6 +25220,16 @@
         "url": "https://opencollective.com/node-fetch"
       }
     },
+    "node_modules/teex": {
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/teex/-/teex-1.0.1.tgz",
+      "integrity": "sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==",
+      "license": "MIT",
+      "optional": true,
+      "dependencies": {
+        "streamx": "^2.12.5"
+      }
+    },
     "node_modules/term-size": {
       "version": "2.2.0",
       "resolved": "https://registry.npmjs.org/term-size/-/term-size-2.2.0.tgz",
@@ -25567,6 +25569,43 @@
       "peerDependencies": {
         "typescript": ">=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta"
       }
+    },
+    "node_modules/tuf-js": {
+      "version": "4.1.0",
+      "resolved": "https://registry.npmjs.org/tuf-js/-/tuf-js-4.1.0.tgz",
+      "integrity": "sha512-50QV99kCKH5P/Vs4E2Gzp7BopNV+KzTXqWeaxrfu5IQJBOULRsTIS9seSsOVT8ZnGXzCyx55nYWAi4qJzpZKEQ==",
+      "license": "MIT",
+      "dependencies": {
+        "@tufjs/models": "4.1.0",
+        "debug": "^4.4.3",
+        "make-fetch-happen": "^15.0.1"
+      },
+      "engines": {
+        "node": "^20.17.0 || >=22.9.0"
+      }
+    },
+    "node_modules/tuf-js/node_modules/debug": {
+      "version": "4.4.3",
+      "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+      "license": "MIT",
+      "dependencies": {
+        "ms": "^2.1.3"
+      },
+      "engines": {
+        "node": ">=6.0"
+      },
+      "peerDependenciesMeta": {
+        "supports-color": {
+          "optional": true
+        }
+      }
+    },
+    "node_modules/tuf-js/node_modules/ms": {
+      "version": "2.1.3",
+      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+      "license": "MIT"
     },
     "node_modules/type-detect": {
       "version": "4.0.8",
@@ -38017,8 +38056,6 @@
       "version": "7.0.2",
       "resolved": "https://registry.npmjs.org/http-proxy-agent/-/http-proxy-agent-7.0.2.tgz",
       "integrity": "sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==",
-      "dev": true,
-      "optional": true,
       "requires": {
         "agent-base": "^7.1.0",
         "debug": "^4.3.4"
@@ -38027,16 +38064,12 @@
         "agent-base": {
           "version": "7.1.4",
           "resolved": "https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz",
-          "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==",
-          "dev": true,
-          "optional": true
+          "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="
         },
         "debug": {
           "version": "4.4.3",
           "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
           "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
-          "dev": true,
-          "optional": true,
           "requires": {
             "ms": "^2.1.3"
           }
@@ -38044,9 +38077,7 @@
         "ms": {
           "version": "2.1.3",
           "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
-          "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
-          "dev": true,
-          "optional": true
+          "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
         }
       }
     },
@@ -44400,6 +44431,31 @@
       "dev": true,
       "requires": {
         "tslib": "^1.8.1"
+      }
+    },
+    "tuf-js": {
+      "version": "4.1.0",
+      "resolved": "https://registry.npmjs.org/tuf-js/-/tuf-js-4.1.0.tgz",
+      "integrity": "sha512-50QV99kCKH5P/Vs4E2Gzp7BopNV+KzTXqWeaxrfu5IQJBOULRsTIS9seSsOVT8ZnGXzCyx55nYWAi4qJzpZKEQ==",
+      "requires": {
+        "@tufjs/models": "4.1.0",
+        "debug": "^4.4.3",
+        "make-fetch-happen": "^15.0.1"
+      },
+      "dependencies": {
+        "debug": {
+          "version": "4.4.3",
+          "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+          "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+          "requires": {
+            "ms": "^2.1.3"
+          }
+        },
+        "ms": {
+          "version": "2.1.3",
+          "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+          "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
+        }
       }
     },
     "type-detect": {
